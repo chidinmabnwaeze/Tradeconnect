@@ -1,12 +1,17 @@
 @import "tailwindcss";
 
+* {
+  font-family: "Poppins", sans-serif;
+}
+
 @theme {
   /* primary background color  */
   --color-global-bg: #F5EDDC;
   --color-primary: #95321C;
   --color-gray: #8080804F;
   --color-gray-bg: #999999;
-
+  --color-success: #27AE60;
+  --color-dash-brown: #C4773BDE;
 }
 
 .btn-primary {
