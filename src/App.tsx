@@ -6,6 +6,8 @@ import Login from "./pages/login";
 import VerifyEmail from "./pages/verifyEmail";
 import VerifyOtp from "./pages/VerifyOtp";
 import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
+import Buyers from "./pages/Users.buyers";
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/buyers" element={<Buyers />} />
       </Routes>
     </BrowserRouter>
   );
