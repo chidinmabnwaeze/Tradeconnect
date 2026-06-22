@@ -8,6 +8,9 @@ import VerifyOtp from "./pages/VerifyOtp";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Buyers from "./pages/Users.buyers";
+import Listings from "./pages/Listings";
+import Orders from "./pages/Orders";
+import Disputes from "./pages/Disputes";
 
 function App() {
   return (
@@ -32,6 +35,9 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/users" element={<Users />} />
         <Route path="/buyers" element={<Buyers />} />
+        <Route path="/listings" element={<Listings />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/disputes" element={<Disputes />} />
       </Routes>
     </BrowserRouter>
   );
