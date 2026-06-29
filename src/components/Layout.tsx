@@ -8,6 +8,7 @@ import {
   ClipboardList,
   LayoutGrid,
   LogOut,
+  Menu,
   MessageSquare,
   Package,
   Settings,
@@ -57,6 +58,9 @@ export default function Layout({
     location.pathname === "/users" || location.pathname === "/buyers";
   const [usersOpen, setUsersOpen] = useState(usersSectionActive);
 
+const [toggle, setToggle] = useState(false)
+
+
   return (
     <div className="min-h-screen bg-global-bg text-slate-900">
       <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -72,6 +76,7 @@ export default function Layout({
                   Admin Portal
                 </h2>
               </div>
+              <Menu className="text-white " onClick={()=>setToggle((prev)=>!prev)}/>
             </div>
 
             <nav className="space-y-3">
