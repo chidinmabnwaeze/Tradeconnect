@@ -6,12 +6,13 @@ import Login from "./pages/login";
 import VerifyEmail from "./pages/verifyEmail";
 import VerifyOtp from "./pages/VerifyOtp";
 import Dashboard from "./pages/Dashboard";
-import Users from "./pages/Users";
+import Users from "./pages/Users.farmers";
 import Buyers from "./pages/Users.buyers";
 import Listings from "./pages/Listings";
 import Orders from "./pages/Orders";
 import Disputes from "./pages/Disputes";
 import AddListing from "./pages/AddListing";
+import FarmerProfile from "./pages/FarmerProfile";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <Route path="/add-listing" element={<AddListing />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/disputes" element={<Disputes />} />
+        <Route path="/users/:id" element={<FarmerProfile />} />
       </Routes>
     </BrowserRouter>
   );

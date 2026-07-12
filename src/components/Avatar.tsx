@@ -24,11 +24,16 @@ function initialsFor(name: string) {
 
 interface AvatarProps {
   name: string;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 }
 
 export default function Avatar({ name, size = "sm" }: AvatarProps) {
-  const dimension = size === "sm" ? "h-9 w-9 text-xs" : "h-12 w-12 text-sm";
+  const dimension =
+    size === "lg"
+      ? "h-16 w-16 text-lg"
+      : size === "md"
+      ? "h-12 w-12 text-sm"
+      : "h-9 w-9 text-xs";
   return (
     <div
       className={`flex ${dimension} shrink-0 items-center justify-center rounded-full font-semibold text-white ${colorFor(

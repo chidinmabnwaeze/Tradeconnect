@@ -3,6 +3,7 @@ import { Funnel, Plus, SquarePen } from "lucide-react";
 import Layout from "../components/Layout";
 import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
+import { useNavigate } from "react-router";
 
 interface Listing {
   name: string;
@@ -33,6 +34,7 @@ const PAGE_SIZE = 10;
 export default function Listings() {
   const [page, setPage] = useState(1);
   const pageCount = Math.ceil(listings.length / PAGE_SIZE) || 1;
+  const navigate = useNavigate();
 
   return (
     <Layout breadcrumb="Listings / All products" compact>
@@ -52,7 +54,7 @@ export default function Listings() {
               <Funnel className="h-4 w-4" />
               Filter
             </button>
-            <button className="flex items-center gap-2 rounded-lg bg-[#C4773B] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95">
+            <button onClick={()=> navigate("/add-listing")} className="flex items-center gap-2 rounded-lg bg-[#C4773B] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95">
               <Plus className="h-4 w-4" />
               Add Listing
             </button>
