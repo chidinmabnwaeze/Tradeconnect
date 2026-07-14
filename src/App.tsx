@@ -13,6 +13,7 @@ import Orders from "./pages/Orders";
 import Disputes from "./pages/Disputes";
 import AddListing from "./pages/AddListing";
 import FarmerProfile from "./pages/FarmerProfile";
+import { Marketplace } from "./Buyers/pages/MarketPlace";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
         <Route path="/orders" element={<Orders />} />
         <Route path="/disputes" element={<Disputes />} />
         <Route path="/users/:id" element={<FarmerProfile />} />
+        <Route path="/marketplace" element={<Marketplace />} />
       </Routes>
     </BrowserRouter>
   );
