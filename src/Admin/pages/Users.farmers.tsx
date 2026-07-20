@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Funnel, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Layout from "../components/Layout";
-import Avatar from "../components/Avatar";
-import StatusBadge from "../components/StatusBadge";
-import Pagination from "../components/Pagination";
-import AddFarmerModal from "../components/AddFarmerModal";
+import Layout from "../../components/Layout";
+import Avatar from "../../components/Avatar";
+import StatusBadge from "../../components/StatusBadge";
+import Pagination from "../../components/Pagination";
+import AddFarmerModal from "../../components/AddFarmerModal";
 
 interface Farmer {
   id: number;

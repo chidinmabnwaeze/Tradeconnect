@@ -1,7 +1,7 @@
 import { ArrowLeftIcon } from "lucide-react";
-import Avatar from "../components/Avatar";
-import Layout from "../components/Layout";
-import addImage from "../assets/add image.png";
+import Avatar from "../../components/Avatar";
+import Layout from "../../components/Layout";
+import addImage from "../../assets/add image.png";
 import React from "react";
 
 const AddListing = () => {

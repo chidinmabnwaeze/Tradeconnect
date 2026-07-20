@@ -49,7 +49,7 @@ interface LayoutProps {
 export default function Layout({
   children,
   breadcrumb = "Dashboard / Overview",
-  title = "Good morning, Marsai!",
+  title = "Good morning, There!",
   subtitle = "Here's what's happening on TradeConnect today.",
   compact = false,
   onNotificationsClick,
@@ -87,7 +87,7 @@ export default function Layout({
                     onClick={() => setUsersOpen((prev) => !prev)}
                     className={`flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 text-left transition ${
                       usersSectionActive
-                        ? "bg-white text-primary shadow"
+                        ? "bg-white/10 text-white shadow"
                         : "text-white/50 hover:bg-white/10 hover:text-white"
                     }`}
                   >
@@ -128,7 +128,7 @@ export default function Layout({
                 to={item.path!}
                 className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition ${
                   active
-                    ? "bg-white text-primary shadow"
+                    ? "bg-white/10 text-white shadow"
                     : "text-white/50 hover:bg-white/10 hover:text-white"
                 }`}
               >

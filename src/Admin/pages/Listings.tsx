@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Funnel, Plus, SquarePen } from "lucide-react";
-import Layout from "../components/Layout";
-import StatusBadge from "../components/StatusBadge";
-import Pagination from "../components/Pagination";
+import Layout from "../../components/Layout";
+import StatusBadge from "../../components/StatusBadge";
+import Pagination from "../../components/Pagination";
 import { useNavigate } from "react-router";
 
 interface Listing {

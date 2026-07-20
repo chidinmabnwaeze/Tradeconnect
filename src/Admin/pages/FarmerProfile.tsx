@@ -9,9 +9,9 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from "lucide-react";
-import Layout from "../components/Layout";
-import Avatar from "../components/Avatar";
-import StatusBadge from "../components/StatusBadge";
+import Layout from "../../components/Layout";
+import Avatar from "../../components/Avatar";
+import StatusBadge from "../../components/StatusBadge";
 
 const tabs = ["Overview", "Listings", "Orders", "Activity Log"] as const;
 type Tab = (typeof tabs)[number];

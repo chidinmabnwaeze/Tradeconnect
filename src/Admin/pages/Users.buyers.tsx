@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Eye, Funnel } from "lucide-react";
-import Layout from "../components/Layout";
-import Avatar from "../components/Avatar";
-import StatusBadge from "../components/StatusBadge";
-import Pagination from "../components/Pagination";
+import Layout from "../../components/Layout";
+import Avatar from "../../components/Avatar";
+import StatusBadge from "../../components/StatusBadge";
+import Pagination from "../../components/Pagination";
 
 interface Buyer {
   name: string;
