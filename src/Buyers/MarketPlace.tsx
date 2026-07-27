@@ -4,6 +4,9 @@ import BuyerLayout from "../components/BuyerLayout";
 import CartDrawer from "./CartDrawer";
 import { useCart, type Product } from "./CartContext";
 import { formatNaira } from "../lib/format";
+import riceImg from "../assets/rice.jpg";
+import corn from "../assets/corn.jpg";
+import millet from "../assets/millet.jpg";
 
 const metrics = [
   { label: "Listings", value: "240+" },
@@ -22,17 +25,17 @@ const categories = [
 ];
 
 const products: Product[] = [
-  { id: "rice", name: "Rice", emoji: "🌾", category: "Grains & Cereals", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
-  { id: "maize", name: "Maize (Corn)", emoji: "🌽", category: "Grains & Cereals", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
-  { id: "sweet-potatoes", name: "Sweet Potatoes", emoji: "🍠", category: "Roots & Tubers", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
-  { id: "plantains", name: "Plantains", emoji: "🍌", category: "Fruits", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
-  { id: "cassava", name: "Cassava", emoji: "🥔", category: "Roots & Tubers", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
-  { id: "egusi", name: "Egusi (Melon)", emoji: "🍈", category: "Nuts & Seeds", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
-  { id: "yam", name: "Yam", emoji: "🍠", category: "Roots & Tubers", location: "Kaduna - Kagarko LGA", price: 1100, unit: "kg" },
-  { id: "lettuce", name: "Lettuce", emoji: "🥬", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 2000, unit: "kg" },
-  { id: "spinach", name: "Spinach", emoji: "🥬", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 800, unit: "bundle" },
-  { id: "okra", name: "Okra", emoji: "🌿", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 900, unit: "kg" },
-  { id: "scent-leaf", name: "Scent Leaf", emoji: "🌿", category: "Herbs", location: "Kaduna - Kagarko LGA", price: 500, unit: "bundle" },
+  { id: "rice", name: "Rice", image: riceImg, category: "Grains & Cereals", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
+  { id: "maize", name: "Maize (Corn)", image: corn, category: "Grains & Cereals", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
+  { id: "sweet-potatoes", name: "Sweet Potatoes", image: millet, category: "Roots & Tubers", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
+  { id: "plantains", name: "Plantains", image: corn, category: "Fruits", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
+  { id: "cassava", name: "Cassava", image: riceImg, category: "Roots & Tubers", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
+  { id: "egusi", name: "Egusi (Melon)", image: millet, category: "Nuts & Seeds", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
+  { id: "yam", name: "Yam", image: corn, category: "Roots & Tubers", location: "Kaduna - Kagarko LGA", price: 1100, unit: "kg" },
+  { id: "lettuce", name: "Lettuce", image: "🥬", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 2000, unit: "kg" },
+  { id: "spinach", name: "Spinach", image: "🥬", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 800, unit: "bundle" },
+  { id: "okra", name: "Okra", image: "🌿", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 900, unit: "kg" },
+  { id: "scent-leaf", name: "Scent Leaf", image: "🌿", category: "Herbs", location: "Kaduna - Kagarko LGA", price: 500, unit: "bundle" },
 ];
 
 const cardBg = ["bg-rose-50", "bg-amber-50", "bg-emerald-50", "bg-sky-50", "bg-violet-50", "bg-lime-50"];

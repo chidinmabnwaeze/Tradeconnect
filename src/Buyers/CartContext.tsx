@@ -3,7 +3,7 @@ import { createContext, useContext, useMemo, useState } from "react";
 export interface Product {
   id: string;
   name: string;
-  emoji: string;
+  image: string;
   category: string;
   location: string;
   price: number;
@@ -75,7 +75,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useCart() {
+export function  useCart() {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error("useCart must be used within a CartProvider");
   return ctx;

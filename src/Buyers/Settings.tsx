@@ -21,7 +21,7 @@ export default function Settings() {
 
   return (
     <BuyerLayout breadcrumb="Settings / Buyer" cartCount={count}>
-      <div className="mx-auto max-w-2xl space-y-6 pb-10">
+      <div className="flex flex-col gap-6">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Profile &amp; Account</h2>
           <p className="mt-1 text-sm text-slate-500">Manage your profile and account information.</p>
@@ -34,7 +34,7 @@ export default function Settings() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
+            <div> 
               <label className="mb-1.5 block text-xs font-medium text-slate-500">Full Name</label>
               <input
                 value={profile.fullName}
