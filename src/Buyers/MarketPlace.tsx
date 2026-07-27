@@ -32,10 +32,10 @@ const products: Product[] = [
   { id: "cassava", name: "Cassava", image: riceImg, category: "Roots & Tubers", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
   { id: "egusi", name: "Egusi (Melon)", image: millet, category: "Nuts & Seeds", location: "Kaduna - Kagarko LGA", price: 1000, unit: "kg" },
   { id: "yam", name: "Yam", image: corn, category: "Roots & Tubers", location: "Kaduna - Kagarko LGA", price: 1100, unit: "kg" },
-  { id: "lettuce", name: "Lettuce", image: "🥬", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 2000, unit: "kg" },
-  { id: "spinach", name: "Spinach", image: "🥬", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 800, unit: "bundle" },
-  { id: "okra", name: "Okra", image: "🌿", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 900, unit: "kg" },
-  { id: "scent-leaf", name: "Scent Leaf", image: "🌿", category: "Herbs", location: "Kaduna - Kagarko LGA", price: 500, unit: "bundle" },
+  // { id: "lettuce", name: "Lettuce", image: "🥬", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 2000, unit: "kg" },
+  // { id: "spinach", name: "Spinach", image: "🥬", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 800, unit: "bundle" },
+  // { id: "okra", name: "Okra", image: "🌿", category: "Vegetables", location: "Kaduna - Kagarko LGA", price: 900, unit: "kg" },
+  // { id: "scent-leaf", name: "Scent Leaf", image: "🌿", category: "Herbs", location: "Kaduna - Kagarko LGA", price: 500, unit: "bundle" },
 ];
 
 const cardBg = ["bg-rose-50", "bg-amber-50", "bg-emerald-50", "bg-sky-50", "bg-violet-50", "bg-lime-50"];
@@ -105,11 +105,11 @@ export const Marketplace = () => {
                 key={product.id}
                 className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm"
               >
-                <div
+                <img
                   className={`flex h-28 w-full items-center justify-center rounded-2xl text-5xl ${cardBg[idx % cardBg.length]}`}
-                >
-                  {product.emoji}
-                </div>
+                src={product.image}
+                alt={product.name}
+                />
                 <div className="mt-3">
                   <span className="inline-block rounded-full bg-global-bg px-2.5 py-0.5 text-[11px] font-medium text-slate-500">
                     {product.category}

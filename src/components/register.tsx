@@ -1,8 +1,29 @@
 import React from "react";
 import logoCover from "../assets/logo-cover.png";
 import { User, LockKeyholeIcon, Mail } from "lucide-react";
+import { useAuthStore } from "../lib/context";
+import {type RegisterData } from "../lib/types/auth";
+import { useState } from "react";
 
 const register = () => {
+
+const handleRegister = useAuthStore((state : any) => state.register);
+
+const [formData, setFormData]= useState<RegisterData>({
+  name: "",
+  email: "",
+  password: "",
+  password_confirmation:"",
+  role: "admin | user"
+})
+
+// if (role === "admin" ){
+//   router.push("/register")
+// }
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)=>{
+e.preventDefault();
+}
+
   return (
     <div className="bg-global-bg min-h-screen w-full flex justify-center items-center px-4 py-8">
       <section className="bg-white w-full max-w-5xl p-6 md:p-10 border border-primary border-4 rounded-3xl shadow-lg flex flex-col md:flex-row md:items-stretch gap-8">
@@ -20,13 +41,20 @@ const register = () => {
         >
           <div className="w-full text-center">
             <h1 className="text-3xl md:text-4xl font-bold">
-              Create Admin Account
+              {formData.role === "admin" ? "Create an admin account" : role === "user" : "Create an Account "}
+              Create an Account
             </h1>
             <p className="text-gray-600 font-medium mt-2">
-              Get started with{" "}
+               {formData.role === "admin" ? (
+                <>
+             " Get started with{" "}
               <span className="font-bold text-primary">Trade Connect</span>{" "}
-              operations.
-            </p>
+              operations. "
+              : role === user : "Register to start shopping on 
+              <span className="font-bold text-primary">Trade Connect</>{""}
+              </>
+               )}
+              </p>
           </div>
 
           <div className="flex w-full flex-col sm:flex-row gap-3 border border-gray-300 rounded-2xl overflow-hidden bg-gray">

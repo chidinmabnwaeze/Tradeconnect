@@ -19,7 +19,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import Layout from "../../components/Layout";
+import Layout from "../components/Layout";
 
 const stats = [
   { label: "Total Orders", value: "1,284", subtext: "12 new today", icon: ShoppingBag },

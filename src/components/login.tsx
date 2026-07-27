@@ -3,6 +3,8 @@ import logoCover from "../assets/logo-cover.png";
 import { LockKeyholeIcon, Mail } from "lucide-react";
 
 const login = () => {
+// const
+
   return (
     <div className="bg-global-bg min-h-screen w-full flex justify-center items-center px-4 py-8">
       <section className="bg-white w-full max-w-5xl p-6 md:p-10 border border-primary border-4 rounded-3xl shadow-lg flex flex-col md:flex-row md:items-stretch gap-8">

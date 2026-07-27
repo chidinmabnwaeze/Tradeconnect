@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Paperclip, Send } from "lucide-react";
-import Layout from "../../components/Layout";
-import Avatar from "../../components/Avatar";
+import Layout from "../components/Layout";
+import Avatar from "../components/Avatar";
 
 interface Message {
   from: "buyer" | "admin";

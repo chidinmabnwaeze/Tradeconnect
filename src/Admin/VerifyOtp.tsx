@@ -1,5 +1,5 @@
 import React from "react";
-import logoCover from "../../assets/logo-cover.png";
+import logoCover from "../assets/logo-cover.png";
 
 const VerifyOtp = () => {
   return (
