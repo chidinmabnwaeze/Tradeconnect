@@ -3,5 +3,5 @@ export interface RegisterData {
   email: string;
   password: string;
   password_confirmation: string;
-  role: string;
+  role: "admin" | "user";
 }
