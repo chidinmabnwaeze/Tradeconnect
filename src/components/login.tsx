@@ -1,9 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import logoCover from "../assets/logo-cover.png";
 import { LockKeyholeIcon, Mail } from "lucide-react";
+import { useAuthStore } from "../lib/context";
+import { type LoginData } from "../lib/types/auth";
 
 const login = () => {
-// const
+  const login = useAuthStore((state: any) => state.login);
+
+  const [formData, setFormData] = useState<LoginData>({
+    email: "",
+    password: "",
+  });
+  // const set
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
+  };
 
   return (
     <div className="bg-global-bg min-h-screen w-full flex justify-center items-center px-4 py-8">
@@ -59,6 +71,15 @@ const login = () => {
           <button className="btn-primary text-white py-3 rounded-2xl w-full text-base font-semibold">
             Log In
           </button>
+          <p className="text-center text-gray-600 mt-6">
+            Don't have an account?{" "}
+            <a
+              href="/register"
+              className="text-primary font-medium hover:underline"
+            >
+              Create one !
+            </a>
+          </p>
         </form>
       </section>
     </div>

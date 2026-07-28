@@ -3,7 +3,7 @@ import logoCover from "../assets/logo-cover.png";
 import { User, LockKeyholeIcon, Mail } from "lucide-react";
 import { useAuthStore } from "../lib/context";
 import { type RegisterData } from "../lib/types/auth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -84,12 +84,18 @@ const Register = () => {
         role: "user",
       };
 
+      console.log(registrationData)
       await handleRegister(registrationData);
       navigate("/login");
     } catch (error: any) {
       console.log("Registration Failed :", error);
+      const validationErrors = error?.response?.data?.errors;
+      const firstValidationError = validationErrors
+        ? (Object.values(validationErrors)[0] as string[])?.[0]
+        : undefined;
       setError(
-        error?.response?.data?.message ||
+        firstValidationError ||
+          error?.response?.data?.message ||
           "Registration failed. Please try again.",
       );
     } finally {
@@ -131,10 +137,14 @@ const Register = () => {
 
           <div className="flex w-full flex-col sm:flex-row gap-3 border border-gray-300 rounded-2xl overflow-hidden bg-gray">
             <button className="w-full sm:w-1/2 bg-white text-primary font-semibold py-3 sm:px-6 rounded-none sm:rounded-l-2xl">
+            <Link to={"/register"}>
               Sign Up
+            </Link>
             </button>
             <button className="w-full sm:w-1/2 text-gray-700 font-semibold py-3 sm:px-6 rounded-none sm:rounded-r-2xl">
+              <Link to={"/login"}>
               Log In
+            </Link>
             </button>
           </div>
 
@@ -200,7 +210,7 @@ const Register = () => {
           </div>
 
           <button
-            className="btn-primary text-white py-3 rounded-2xl w-full text-base font-semibold"
+            className="btn-primary flex items-center justify-center text-white py-3 rounded-2xl w-full text-base font-semibold"
             type="submit"
             disabled={loading}
           >

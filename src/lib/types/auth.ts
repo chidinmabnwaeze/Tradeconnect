@@ -5,3 +5,8 @@ export interface RegisterData {
   password_confirmation: string;
   role: "admin" | "user";
 }
+
+export interface LoginData {
+  email: string;
+  password: string;
+}

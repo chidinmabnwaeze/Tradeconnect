@@ -12,7 +12,7 @@ export const useAuthStore = create((set) => ({
     set({ isAuthenticated: true });
     return response;
   },
-  register: async (RegisterData) => {
+  register: async (RegisterData:RegisterData) => {
     const response = await register(RegisterData);
     return response;
   },
