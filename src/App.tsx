@@ -20,6 +20,7 @@ import BuyerOrders from "./Buyers/Orders";
 import BuyerDisputes from "./Buyers/Disputes";
 import BuyerSettings from "./Buyers/Settings";
 import Checkout from "./Buyers/Checkout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -31,19 +32,112 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/buyers" element={<Buyers />} />
-          <Route path="/listings" element={<Listings />} />
-          <Route path="/add-listing" element={<AddListing />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/disputes" element={<Disputes />} />
-          <Route path="/users/:id" element={<FarmerProfile />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/marketplace/orders" element={<BuyerOrders />} />
-          <Route path="/marketplace/disputes" element={<BuyerDisputes />} />
-          <Route path="/marketplace/settings" element={<BuyerSettings />} />
-          <Route path="/marketplace/checkout" element={<Checkout />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Users />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyers"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Buyers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/listings"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Listings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/add-listing"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AddListing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/disputes"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Disputes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users/:id"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <FarmerProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/marketplace"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <Marketplace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/marketplace/orders"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <BuyerOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/marketplace/disputes"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <BuyerDisputes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/marketplace/settings"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <BuyerSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/marketplace/checkout"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </CartProvider>
     </BrowserRouter>

@@ -3,6 +3,7 @@ import logoCover from "../assets/logo-cover.png";
 import { User, LockKeyholeIcon, Mail } from "lucide-react";
 import { useAuthStore } from "../lib/context";
 import { type RegisterData } from "../lib/types/auth";
+import { getErrorMessage } from "../lib/getErrorMessage";
 import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -84,20 +85,10 @@ const Register = () => {
         role: "user",
       };
 
-      console.log(registrationData)
       await handleRegister(registrationData);
       navigate("/login");
-    } catch (error: any) {
-      console.log("Registration Failed :", error);
-      const validationErrors = error?.response?.data?.errors;
-      const firstValidationError = validationErrors
-        ? (Object.values(validationErrors)[0] as string[])?.[0]
-        : undefined;
-      setError(
-        firstValidationError ||
-          error?.response?.data?.message ||
-          "Registration failed. Please try again.",
-      );
+    } catch (error) {
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

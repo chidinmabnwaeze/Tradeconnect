@@ -1,20 +1,37 @@
 import React, { useState } from "react";
 import logoCover from "../assets/logo-cover.png";
-import { LockKeyholeIcon, Mail } from "lucide-react";
+import { LockKeyholeIcon, Mail, Eye, EyeClosed } from "lucide-react";
 import { useAuthStore } from "../lib/context";
 import { type LoginData } from "../lib/types/auth";
+import { getErrorMessage } from "../lib/getErrorMessage";
+import { useNavigate } from "react-router-dom";
 
 const login = () => {
   const login = useAuthStore((state: any) => state.login);
-
+const navigate = useNavigate()
   const [formData, setFormData] = useState<LoginData>({
     email: "",
     password: "",
   });
-  // const set
+
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const response = await login(formData.email, formData.password);
+      navigate(response.user.role === "admin" ? "/dashboard" : "/marketplace");
+    } catch (error) {
+      setError(getErrorMessage(error));
+    }
   };
 
   return (
@@ -29,7 +46,7 @@ const login = () => {
         </section>
 
         <form
-          action=""
+          onSubmit={handleSubmit}
           className="flex flex-col justify-center items-center w-full md:w-1/2 px-2 sm:px-4 space-y-5"
         >
           <div className="w-full text-center">
@@ -40,7 +57,11 @@ const login = () => {
               operations.
             </p>
           </div>
-
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 text-primary rounded">
+              {error}
+            </div>
+          )}
           <div className="flex w-full flex-col sm:flex-row gap-3 border border-gray-300 rounded-2xl overflow-hidden bg-gray">
             <button className="w-full sm:w-1/2 text-gray-700  font-semibold py-3 sm:px-6 rounded-none sm:rounded-l-2xl">
               Sign Up
@@ -53,19 +74,37 @@ const login = () => {
           <div className="flex items-center border border-gray-300 rounded-2xl w-full px-4 py-2">
             <Mail className="w-5 text-gray-bg" />
             <input
+              name="email"
               type="email"
               placeholder="Email"
               className="ml-3 py-2 px-2 w-full bg-transparent outline-none"
+              value={formData.email}
+              onChange={handleChange}
             />
           </div>
 
           <div className="flex items-center border border-gray-300 rounded-2xl w-full px-4 py-2">
             <LockKeyholeIcon className="w-5 text-gray-bg" />
             <input
-              type="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               className="ml-3 py-2 px-2 w-full bg-transparent outline-none"
+              value={formData.password}
+              onChange={handleChange}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((pass) => !pass)}
+              className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeClosed className="w-5 h-5" />
+              ) : (
+                <Eye className="w-5 h-5" />
+              )}
+            </button>
           </div>
 
           <button className="btn-primary text-white py-3 rounded-2xl w-full text-base font-semibold">

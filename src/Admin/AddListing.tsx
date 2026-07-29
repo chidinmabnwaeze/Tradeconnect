@@ -2,7 +2,15 @@ import { ArrowLeftIcon } from "lucide-react";
 import Avatar from "../components/Avatar";
 import Layout from "../components/Layout";
 import addImage from "../assets/add image.png";
-import React from "react";
+import React, { useState } from "react";
+import {
+  createCategory,
+  getCategories,
+} from "../lib/services/categories.service";
+import { getErrorMessage } from "../lib/getErrorMessage";
+import { Link } from "react-router-dom";
+import { createProduce } from "../lib/services/produce.service";
+// import { ProducePayload } from "../lib/types/produce";
 
 const AddListing = () => {
   interface Farmer {
@@ -53,12 +61,83 @@ const AddListing = () => {
 
   const [isActive, setIsActive] = React.useState(false);
 
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [produce, setProduce] = useState<ProducePayload>({
+    category_id: 0,
+    name: "",
+    // image?,
+  });
+
+  const handleCreateCategory = async () => {
+    try {
+      await createCategory(category);
+      setCategory("");
+    } catch (err) {
+      getErrorMessage(err);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      await getCategories();
+      setCategories(categories);
+    } catch (err) {
+      getErrorMessage(err);
+      console.log(err);
+    }
+  };
+
+  const handleCreateProduce = async () => {
+    try {
+      await createProduce(produce);
+    
+    } catch (err) {
+      getErrorMessage(err);
+    }
+  };
+
   return (
     <Layout>
-      <button className="flex text-sm items-center gap-2 text-gray-600 hover:text-white">
-        <ArrowLeftIcon />
-        Back to Listings
-      </button>
+      <Link to="/listings">
+        <button className="flex text-sm items-center gap-2 text-gray-600 hover:text-white">
+          <ArrowLeftIcon />
+          Back to Listings
+        </button>
+      </Link>
+      <section className="bg-white p-6 rounded-lg mt-6">
+        <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
+          <h1 className="text-xl font-bold">Create Category</h1>
+          <p
+            className="text-gray-400 font-medium
+          "
+          >
+            Group your produce into different categories
+          </p>
+        </div>
+        <form action="">
+          <div className="flex flex-col gap-2 mb-4">
+            <label className="font-medium">Category Name</label>
+            <input
+              type="text"
+              placeholder="e.g. Grains"
+              className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
+          </div>
+          <div className="flex justify-end ">
+            <button
+              type="button"
+              onClick={handleCreateCategory}
+              className="bg-[#4A7C2A] font-semibold text-white py-3 px-4 rounded-md hover:bg-[#3e6b22]"
+            >
+              Create Category
+            </button>
+          </div>
+        </form>
+      </section>
+
       <section className="bg-white p-6 rounded-lg mt-6">
         <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
           <h1 className="text-xl font-bold">Produce Information</h1>
@@ -76,15 +155,20 @@ const AddListing = () => {
               type="text"
               placeholder="e.g. Apples"
               className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+              // onChange={(e)=>setProduce(e.target.value)}
             />
           </div>
           <div className="flex justify-between gap-2 mb-4">
             <div className="flex flex-col gap-2 w-full">
               <label className="font-medium">Category</label>
-              <select className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]">
-                <option>Vegetables</option>
+              <select
+              onChange={()=> setCategories(categories)}
+              className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]">
+                {/* <option>Vegetables</option>
                 <option>Fruits</option>
-                <option>Grains</option>
+                <option>Grains</option> */}
+                <option value={fetchCategories()}></option>
+                
               </select>
             </div>
             <div className="flex flex-col gap-2 w-full ">
