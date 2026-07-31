@@ -1,12 +1,25 @@
 import { useState } from "react";
 import { X, CheckCircle, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import type { Farmer, FarmerPayload } from "../lib/types/farmer";
+import { getErrorMessage } from "../lib/getErrorMessage";
+import { createFarmer } from "../lib/services/farmers.service";
 
 const primaryProduceOptions = [
-  "Rice", "Cassava", "Maize", "Vegetables", "Palm Oil", "Yam",
+  "Rice",
+  "Cassava",
+  "Maize",
+  "Vegetables",
+  "Palm Oil",
+  "Yam",
 ];
 
-const farmingMethods = ["Mixed Farming", "Subsistence", "Commercial", "Organic"];
+const farmingMethods = [
+  "Mixed Farming",
+  "Subsistence",
+  "Commercial",
+  "Organic",
+];
 
 interface AddFarmerModalProps {
   onClose: () => void;
@@ -16,11 +29,38 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
   const [selectedProduce, setSelectedProduce] = useState<string[]>([]);
+  const [newFarmer, setNewFarmer] = useState<FarmerPayload>();
 
   const toggleProduce = (item: string) => {
     setSelectedProduce((prev) =>
-      prev.includes(item) ? prev.filter((p) => p !== item) : [...prev, item]
+      prev.includes(item) ? prev.filter((p) => p !== item) : [...prev, item],
     );
+  };
+
+  const handleChange = async (e:React.ChangeEvent<HTMLInputElement>)=>{
+// const {name, value} = e.target
+//     setNewFarmer()
+  }
+
+  const haandleCreateFarmer = async () => {
+    try {
+      const FarmerData = {
+        name: newFarmer?.name,
+        state: newFarmer?.state,
+        lga: newFarmer?.lga,
+        status: newFarmer?.status,
+        phone_number: newFarmer?.phone_number,
+        farm_name: newFarmer?.farm_name,
+        farm_size: newFarmer?.farm_size,
+        farming_method: newFarmer?.farming_method,
+        experience: newFarmer?.experience,
+        primary_produce: newFarmer?.primary_produce,
+      };
+      // const response = await createFarmer(FarmerData);
+// setNewFarmer((prev)=>{(...prev ,{name, value})})
+    } catch (error) {
+      console.log(getErrorMessage(error));
+    }
   };
 
   const handleSave = () => setConfirmed(true);
@@ -31,10 +71,17 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-6 py-5">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Add New Farmer</h2>
-            <p className="text-sm text-slate-500">Fill in the details to register and add a new farmer</p>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Add New Farmer
+            </h2>
+            <p className="text-sm text-slate-500">
+              Fill in the details to register and add a new farmer
+            </p>
           </div>
-          <button onClick={onClose} className="rounded-full p-2 text-slate-400 hover:bg-slate-100">
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-slate-400 hover:bg-slate-100"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -49,15 +96,21 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
               <div className="flex-1 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700">First Name</label>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                      First Name
+                    </label>
                     <input
+                    name="firstName"
                       type="text"
                       placeholder="e.g. Musa"
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    onChange={(e)=> setNewFarmer(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Last Name</label>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                      Last Name
+                    </label>
                     <input
                       type="text"
                       placeholder="e.g. Ibrahim"
@@ -67,7 +120,9 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Email Address</label>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                      Email Address
+                    </label>
                     <input
                       type="email"
                       placeholder="email@example.com"
@@ -75,7 +130,9 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Phone Number</label>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                      Phone Number
+                    </label>
                     <input
                       type="tel"
                       placeholder="+234 800 000 0000"
@@ -104,26 +161,75 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">State</label>
-                  <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                    State
+                  </label>
+                  <select
+                    id="state"
+                    name="state"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  >
                     <option value="">Select state</option>
-                    <option>Kaduna</option>
-                    <option>Kano</option>
-                    <option>Plateau</option>
-                    <option>Niger</option>
+                    <option value="Abia">Abia</option>
+                    <option value="Adamawa">Adamawa</option>
+                    <option value="AkwaIbom">AkwaIbom</option>
+                    <option value="Anambra">Anambra</option>
+                    <option value="Bauchi">Bauchi</option>
+                    <option value="Bayelsa">Bayelsa</option>
+                    <option value="Benue">Benue</option>
+                    <option value="Borno">Borno</option>
+                    <option value="Cross River">Cross River</option>
+                    <option value="Delta">Delta</option>
+                    <option value="Ebonyi">Ebonyi</option>
+                    <option value="Edo">Edo</option>
+                    <option value="Ekiti">Ekiti</option>
+                    <option value="Enugu">Enugu</option>
+                    <option value="FCT">FCT</option>
+                    <option value="Gombe">Gombe</option>
+                    <option value="Imo">Imo</option>
+                    <option value="Jigawa">Jigawa</option>
+                    <option value="Kaduna">Kaduna</option>
+                    <option value="Kano">Kano</option>
+                    <option value="Katsina">Katsina</option>
+                    <option value="Kebbi">Kebbi</option>
+                    <option value="Kogi">Kogi</option>
+                    <option value="Kwara">Kwara</option>
+                    <option value="Lagos">Lagos</option>
+                    <option value="Nasarawa">Nasarawa</option>
+                    <option value="Niger">Niger</option>
+                    <option value="Ogun">Ogun</option>
+                    <option value="Ondo">Ondo</option>
+                    <option value="Osun">Osun</option>
+                    <option value="Oyo">Oyo</option>
+                    <option value="Plateau">Plateau</option>
+                    <option value="Rivers">Rivers</option>
+                    <option value="Sokoto">Sokoto</option>
+                    <option value="Taraba">Taraba</option>
+                    <option value="Yobe">Yobe</option>
+                    <option value="Zamfara">Zamafara</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">City / LGA</label>
-                  <input
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                    City / LGA
+                  </label>
+                  <select
+                    name="lga"
+                    id="lga"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 form-control select-lga"
+                    required
+                  ></select>
+                  {/* <input
                     type="text"
                     placeholder="e.g. Kagarko"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
+                  /> */}
                 </div>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">Address</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Address
+                </label>
                 <textarea
                   rows={2}
                   placeholder="Enter full address"
@@ -141,7 +247,9 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Farm Name</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Farm Name
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. Ibrahim Family Farm"
@@ -149,7 +257,9 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Farm Size (Hectares)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Farm Size (Hectares)
+                  </label>
                   <input
                     type="number"
                     placeholder="e.g. 4.5"
@@ -159,14 +269,20 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Farming Method</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Farming Method
+                  </label>
                   <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
                     <option value="">Select method</option>
-                    {farmingMethods.map((m) => <option key={m}>{m}</option>)}
+                    {farmingMethods.map((m) => (
+                      <option key={m}>{m}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Years of Experience</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Years of Experience
+                  </label>
                   <input
                     type="number"
                     placeholder="e.g. 5"
@@ -175,7 +291,9 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
                 </div>
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Primary Produce</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Primary Produce
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {primaryProduceOptions.map((item) => (
                     <button
@@ -194,7 +312,9 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
                 </div>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">Farm Address</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Farm Address
+                </label>
                 <textarea
                   rows={2}
                   placeholder="Enter farm address"
@@ -228,17 +348,27 @@ export default function AddFarmerModal({ onClose }: AddFarmerModalProps) {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
                 <CheckCircle className="h-9 w-9 text-emerald-500" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Farmer added successfully</h3>
-              <p className="mt-1.5 text-sm text-slate-500">The farmer has been registered on TradeConnect.</p>
+              <h3 className="text-lg font-semibold text-slate-900">
+                Farmer added successfully
+              </h3>
+              <p className="mt-1.5 text-sm text-slate-500">
+                The farmer has been registered on TradeConnect.
+              </p>
               <div className="mt-6 flex gap-3">
                 <button
-                  onClick={() => { setConfirmed(false); onClose(); }}
+                  onClick={() => {
+                    setConfirmed(false);
+                    onClose();
+                  }}
                   className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Add Another
                 </button>
                 <button
-                  onClick={() => { onClose(); navigate("/users/1"); }}
+                  onClick={() => {
+                    onClose();
+                    navigate("/users/1");
+                  }}
                   className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
                 >
                   View Profile

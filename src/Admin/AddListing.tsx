@@ -2,7 +2,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Avatar from "../components/Avatar";
 import Layout from "../components/Layout";
 import addImage from "../assets/add image.png";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   createCategory,
   getCategories,
@@ -10,54 +10,56 @@ import {
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { Link } from "react-router-dom";
 import { createProduce } from "../lib/services/produce.service";
-// import { ProducePayload } from "../lib/types/produce";
+import { type ProducePayload } from "../lib/types/produce";
+import { getFarmer, getFarmers } from "../lib/services/farmers.service";
+import type { Farmer } from "../lib/types/farmer";
 
 const AddListing = () => {
-  interface Farmer {
-    name: string;
-    code: string;
-    lga: string;
-    listings: number;
-    status: "Active" | "Pending" | "Inactive";
-  }
+  // interface Farmer {
+  //   name: string;
+  //   code: string;
+  //   lga: string;
+  //   listings: number;
+  //   status: "Active" | "Pending" | "Inactive";
+  // }
 
-  const farmers: Farmer[] = [
-    {
-      name: "Musa Ibrahim",
-      code: "FAR-01923",
-      lga: "Kagarko",
-      listings: 7,
-      status: "Active",
-    },
-    {
-      name: "Aisha Yusuf",
-      code: "FAR-01872",
-      lga: "Kajuru",
-      listings: 3,
-      status: "Pending",
-    },
-    {
-      name: "Muhibba Musa",
-      code: "FAR-02963",
-      lga: "Kachia",
-      listings: 8,
-      status: "Inactive",
-    },
-    {
-      name: "Ahmmed Bayo",
-      code: "FAR-01923",
-      lga: "Jemaa",
-      listings: 5,
-      status: "Active",
-    },
-    {
-      name: "Musa Ibrahim",
-      code: "FAR-01923",
-      lga: "Kagarko",
-      listings: 7,
-      status: "Inactive",
-    },
-  ];
+  // const farmersList: Farmer[] = [
+  //   {
+  //     name: "Musa Ibrahim",
+  //     code: "FAR-01923",
+  //     lga: "Kagarko",
+  //     listings: 7,
+  //     status: "Active",
+  //   },
+  //   {
+  //     name: "Aisha Yusuf",
+  //     code: "FAR-01872",
+  //     lga: "Kajuru",
+  //     listings: 3,
+  //     status: "Pending",
+  //   },
+  //   {
+  //     name: "Muhibba Musa",
+  //     code: "FAR-02963",
+  //     lga: "Kachia",
+  //     listings: 8,
+  //     status: "Inactive",
+  //   },
+  //   {
+  //     name: "Ahmmed Bayo",
+  //     code: "FAR-01923",
+  //     lga: "Jemaa",
+  //     listings: 5,
+  //     status: "Active",
+  //   },
+  //   {
+  //     name: "Musa Ibrahim",
+  //     code: "FAR-01923",
+  //     lga: "Kagarko",
+  //     listings: 7,
+  //     status: "Inactive",
+  //   },
+  // ];
 
   const [isActive, setIsActive] = React.useState(false);
 
@@ -68,6 +70,7 @@ const AddListing = () => {
     name: "",
     // image?,
   });
+  const [farmers, setFarmers] = useState<Farmer>([]);
 
   const handleCreateCategory = async () => {
     try {
@@ -78,6 +81,7 @@ const AddListing = () => {
     }
   };
 
+  // useEffect(()=>{
   const fetchCategories = async () => {
     try {
       await getCategories();
@@ -87,15 +91,32 @@ const AddListing = () => {
       console.log(err);
     }
   };
+  // fetchCategories()
+  //   },[])
 
-  const handleCreateProduce = async () => {
-    try {
-      await createProduce(produce);
-    
-    } catch (err) {
-      getErrorMessage(err);
-    }
-  };
+  useEffect(() => {
+    const handleCreateProduce = async () => {
+      try {
+        await createProduce(produce);
+        console.log(produce);
+      } catch (err) {
+        getErrorMessage(err);
+      }
+    };
+    handleCreateProduce();
+  }, []);
+
+  useEffect(() => {
+    const handleAssignFarmer = async () => {
+      try {
+        await getFarmers();
+        setFarmers;
+      } catch (err) {
+        console.log(getErrorMessage(err));
+      }
+    };
+    handleAssignFarmer();
+  }, []);
 
   return (
     <Layout>
@@ -155,20 +176,20 @@ const AddListing = () => {
               type="text"
               placeholder="e.g. Apples"
               className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-              // onChange={(e)=>setProduce(e.target.value)}
+              onChange={(e) => setProduce(e.target.value)}
             />
           </div>
           <div className="flex justify-between gap-2 mb-4">
             <div className="flex flex-col gap-2 w-full">
               <label className="font-medium">Category</label>
               <select
-              onChange={()=> setCategories(categories)}
-              className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]">
+                onChange={() => setCategories(categories)}
+                className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+              >
                 {/* <option>Vegetables</option>
                 <option>Fruits</option>
                 <option>Grains</option> */}
                 <option value={fetchCategories()}></option>
-                
               </select>
             </div>
             <div className="flex flex-col gap-2 w-full ">
@@ -213,7 +234,7 @@ const AddListing = () => {
           <p>Select Farmer</p>
         </div>
         <div className="flex gap-2 ">
-          {farmers.map((farmer, idx) => (
+          {farmers.map((farmer :any, idx :number) => (
             <div
               className="p-3 flex items-center justify-between border border-[#4A7C2A]/30 rounded-lg hover:bg-[#4A7C2A]/10 cursor-pointer"
               key={idx}
@@ -313,7 +334,7 @@ const AddListing = () => {
             Uploaded files
             {[].map((file, idx) => (
               <div className="flex items-center justify-between border border-[#4A7C2A]/30 rounded-lg p-2">
-                {/* <span>{file.name}</span> */}
+                <span>{file.name}</span>
                 <button className="text-red-500 hover:text-red-700">
                   Remove
                 </button>

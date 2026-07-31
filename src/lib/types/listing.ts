@@ -22,3 +22,11 @@ export interface ListingPayload {
   stock: number;
   status: ListingStatus;
 }
+
+export interface ListingQueryParams {
+  search?: string;
+  category_id?: number;
+  farmer_id?: number;
+  sort?: "price" | "stock" | "created_at" | "produce" | "farmer" | "category";
+  order?: "asc" | "desc";
+}

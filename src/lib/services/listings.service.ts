@@ -1,5 +1,5 @@
 import api from "../api";
-import type { Listing, ListingPayload } from "../types/listing";
+import type { Listing, ListingPayload, ListingQueryParams } from "../types/listing";
 
 // Admin
 export const getAllListings = async (): Promise<Listing[]> => {
@@ -38,9 +38,11 @@ export const deleteListing = async (id: number): Promise<{ message: string }> =>
   return response.data;
 };
 
-// Buyer (user) — active listings only
-export const getActiveListings = async (): Promise<Listing[]> => {
-  const response = await api.get("/listings");
+// Public — active listings only, no auth required
+export const getActiveListings = async (
+  params?: ListingQueryParams,
+): Promise<Listing[]> => {
+  const response = await api.get("/listings", { params });
   return response.data.data;
 };
 

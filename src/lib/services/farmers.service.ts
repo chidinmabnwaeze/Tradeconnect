@@ -24,7 +24,9 @@ export const updateFarmer = async (
   return response.data.data;
 };
 
-export const deleteFarmer = async (id: number): Promise<{ message: string }> => {
+export const deleteFarmer = async (
+  id: number,
+): Promise<{ message: string }> => {
   const response = await api.delete(`/admin/farmers/${id}`);
   return response.data;
 };
