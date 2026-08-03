@@ -12,6 +12,7 @@ import Listings from "./Admin/Listings";
 import Orders from "./Admin/Orders";
 import Disputes from "./Admin/Disputes";
 import AddListing from "./Admin/AddListing";
+import AddFarmer from "./Admin/AddFarmer";
 import FarmerProfile from "./Admin/FarmerProfile";
 import { Marketplace } from "./Buyers/MarketPlace";
 import LandingPage from "./components/LandingPage";
@@ -86,6 +87,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Disputes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users/add"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AddFarmer />
               </ProtectedRoute>
             }
           />

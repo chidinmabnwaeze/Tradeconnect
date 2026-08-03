@@ -70,12 +70,13 @@ const AddListing = () => {
     name: "",
     // image?,
   });
-  const [farmers, setFarmers] = useState<Farmer>([]);
+  const [farmers, setFarmers] = useState<Farmer[]>([]);
 
   const handleCreateCategory = async () => {
     try {
       await createCategory(category);
       setCategory("");
+      console.log(category);
     } catch (err) {
       getErrorMessage(err);
     }
@@ -86,6 +87,7 @@ const AddListing = () => {
     try {
       await getCategories();
       setCategories(categories);
+      console.log(categories);
     } catch (err) {
       getErrorMessage(err);
       console.log(err);
@@ -97,7 +99,12 @@ const AddListing = () => {
   useEffect(() => {
     const handleCreateProduce = async () => {
       try {
-        await createProduce(produce);
+        const produceData: ProducePayload = {
+          category_id: produce.category_id, // Replace with the actual category ID
+          name: produce.name,
+          // image: produce.image, // Uncomment if you have an image field
+        };
+        await createProduce(produceData);
         console.log(produce);
       } catch (err) {
         getErrorMessage(err);
@@ -234,7 +241,7 @@ const AddListing = () => {
           <p>Select Farmer</p>
         </div>
         <div className="flex gap-2 ">
-          {farmers.map((farmer :any, idx :number) => (
+          {farmers.map((farmer: any, idx: number) => (
             <div
               className="p-3 flex items-center justify-between border border-[#4A7C2A]/30 rounded-lg hover:bg-[#4A7C2A]/10 cursor-pointer"
               key={idx}
