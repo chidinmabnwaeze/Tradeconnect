@@ -402,8 +402,6 @@ GET /api/v1/me
 
 ---
 
-<<<<<<< HEAD
-=======
 ### Dashboard
 
 System-wide stats for the admin home screen.
@@ -434,7 +432,6 @@ GET /api/v1/admin/dashboard
 
 ---
 
->>>>>>> 9e6f74f (Update Trade Connect API features)
 ### Categories
 
 Product groupings such as Fruits, Vegetables, Grains.
@@ -615,8 +612,6 @@ POST /api/v1/admin/farmers
 }
 ```
 
-<<<<<<< HEAD
-=======
 **List / show notes**
 
 - `GET /api/v1/admin/farmers` includes `listings_count`.
@@ -649,7 +644,6 @@ POST /api/v1/admin/farmers
 }
 ```
 
->>>>>>> 9e6f74f (Update Trade Connect API features)
 ---
 
 ### Listings
@@ -947,8 +941,6 @@ POST /api/v1/orders
 
 ---
 
-<<<<<<< HEAD
-=======
 ## Admin Buyer Endpoints
 
 Buyers are users with role `user` (not admins).
@@ -982,7 +974,6 @@ Each buyer includes `orders_count` (number of orders they have placed).
 
 ---
 
->>>>>>> 9e6f74f (Update Trade Connect API features)
 ## Admin Order Endpoints
 
 
