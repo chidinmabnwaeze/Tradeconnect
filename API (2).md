@@ -19,20 +19,14 @@ Trade Connect is a farm produce marketplace API. Admins manage the product catal
 6. [Public Endpoints](#public-endpoints)
 7. [Auth Endpoints](#auth-endpoints)
 8. [Admin Endpoints](#admin-endpoints)
-<<<<<<< HEAD
-=======
   - [Dashboard](#dashboard)
->>>>>>> 9e6f74f (Update Trade Connect API features)
   - [Categories](#categories)
   - [Produce](#produce)
   - [Farmers](#farmers)
   - [Listings](#listings)
 9. [Typical Admin Setup Flow](#typical-admin-setup-flow)
-<<<<<<< HEAD
-=======
 10. [User Dispute Endpoints](#user-dispute-endpoints)
 11. [Admin Dispute Endpoints](#admin-dispute-endpoints)
->>>>>>> 9e6f74f (Update Trade Connect API features)
 
 ---
 
@@ -70,11 +64,7 @@ Protected endpoints require a JWT in the `Authorization` header:
 Authorization: Bearer {access_token}
 ```
 
-<<<<<<< HEAD
-Tokens are issued by `/register` and `/login`. Default expiry is **60 minutes** (`expires_in: 3600` seconds).
-=======
 Tokens are issued by `/register` and `/login`. Default expiry is **60 days** (`expires_in: 5184000` seconds).
->>>>>>> 9e6f74f (Update Trade Connect API features)
 
 
 | Role    | Access                                  |
@@ -117,11 +107,7 @@ Tokens are issued by `/register` and `/login`. Default expiry is **60 days** (`e
 {
   "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "token_type": "bearer",
-<<<<<<< HEAD
-  "expires_in": 3600,
-=======
   "expires_in": 5184000,
->>>>>>> 9e6f74f (Update Trade Connect API features)
   "user": {
     "id": 1,
     "name": "Jane Doe",
@@ -184,20 +170,12 @@ Resource-specific not-found messages:
 ## Enums & Status Values
 
 
-<<<<<<< HEAD
-| Field              | Allowed values       |
-| ------------------ | -------------------- |
-| `role` (user)      | `admin`, `user`      |
-| `status` (farmer)  | `active`, `inactive` |
-| `status` (listing) | `active`, `inactive` |
-=======
 | Field              | Allowed values                       |
 | ------------------ | ------------------------------------ |
 | `role` (user)      | `admin`, `user`                      |
 | `status` (farmer)  | `active`, `inactive`                 |
 | `status` (listing) | `active`, `inactive`                 |
 | `status` (dispute) | `open`, `resolved`, `closed`         |
->>>>>>> 9e6f74f (Update Trade Connect API features)
 
 
 ---
@@ -221,8 +199,6 @@ GET /api/v1/health
 
 ---
 
-<<<<<<< HEAD
-=======
 ### Listings (public)
 
 Browse available farm produce listings without authentication. Only **active** listings are returned.
@@ -291,7 +267,6 @@ GET /api/v1/listings?category_id=1&sort=farmer&order=asc
 
 ---
 
->>>>>>> 9e6f74f (Update Trade Connect API features)
 ## Auth Endpoints
 
 ### Register
@@ -796,54 +771,7 @@ curl http://localhost:8000/api/v1/admin/listings \
 
 ## User Listing Endpoints
 
-<<<<<<< HEAD
-> **Requires:** `Authorization: Bearer {user_token}`
-
-Browse available farm produce listings before placing an order. Only **active** listings are returned.
-
-
-| Method | Endpoint                | Description              |
-| ------ | ----------------------- | ------------------------ |
-| `GET`  | `/api/v1/listings`      | List all active listings |
-| `GET`  | `/api/v1/listings/{id}` | Get one active listing   |
-
-
-**Response `200`**
-
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "farmer_id": 1,
-      "produce_id": 1,
-      "price": "45000.00",
-      "stock": 120,
-      "status": "active",
-      "produce": {
-        "id": 1,
-        "name": "Rice",
-        "image_url": "data:image/jpeg;base64,...",
-        "category": {
-          "id": 1,
-          "name": "Grains"
-        }
-      },
-      "farmer": {
-        "id": 1,
-        "name": "Ibrahim Musa",
-        "state": "Niger",
-        "lga": "Bida"
-      },
-      "created_at": "...",
-      "updated_at": "..."
-    }
-  ]
-}
-```
-=======
 Listings are public — see [Listings (public)](#listings-public). No auth token is required to browse or open a listing.
->>>>>>> 9e6f74f (Update Trade Connect API features)
 
 ---
 
@@ -984,8 +912,6 @@ Each buyer includes `orders_count` (number of orders they have placed).
 | `PATCH` | `/api/v1/admin/orders/{id}` | Update order status |
 
 
-<<<<<<< HEAD
-=======
 Each order includes produce, buyer, and farmer details.
 
 **Response `200`**
@@ -1026,7 +952,6 @@ Each order includes produce, buyer, and farmer details.
 }
 ```
 
->>>>>>> 9e6f74f (Update Trade Connect API features)
 **Update status body**
 
 
@@ -1045,8 +970,6 @@ PATCH /api/v1/admin/orders/1
 
 ---
 
-<<<<<<< HEAD
-=======
 ## User Dispute Endpoints
 
 > **Requires:** `Authorization: Bearer {user_token}`  
@@ -1448,15 +1371,10 @@ curl -X PATCH http://localhost:8000/api/v1/admin/disputes/1 \
 ```
 
 ---
->>>>>>> 9e6f74f (Update Trade Connect API features)
 ## Coming Soon
 
 - Role-restricted registration (public signup as `user` only)
 
 ---
 
-<<<<<<< HEAD
-*Last updated: June 2026*
-=======
 *Last updated: July 2026*
->>>>>>> 9e6f74f (Update Trade Connect API features)
