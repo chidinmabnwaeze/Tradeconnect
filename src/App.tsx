@@ -91,7 +91,7 @@ function App() {
             }
           />
           <Route
-            path="/users/add"
+            path="/farmers/add"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AddFarmer />
@@ -99,7 +99,7 @@ function App() {
             }
           />
           <Route
-            path="/users/:id"
+            path="/farmers/:id"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <FarmerProfile />

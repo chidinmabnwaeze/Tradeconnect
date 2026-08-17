@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   MapPin,
@@ -12,35 +12,113 @@ import {
 import Layout from "../components/Layout";
 import Avatar from "../components/Avatar";
 import StatusBadge from "../components/StatusBadge";
+import { getFarmer } from "../lib/services/farmers.service";
+import { type Farmer, type FarmerPayload } from "../lib/types/farmer";
+import { getErrorMessage } from "../lib/getErrorMessage";
 
 const tabs = ["Overview", "Listings", "Orders", "Activity Log"] as const;
 type Tab = (typeof tabs)[number];
 
-const farmerListings = [
-  { name: "Rice", emoji: "🌾", category: "Grains & Cereals", price: "₦180/kg", stock: "200kg", status: "Pending" },
-  { name: "Yam", emoji: "🍠", category: "Roots & Tubers", price: "₦180/kg", stock: "180kg", status: "Live" },
-  { name: "Cassava", emoji: "🥔", category: "Roots & Tubers", price: "₦220/kg", stock: "120kg", status: "Live" },
-];
-
 const farmerOrders = [
-  { order: "#1284", item: "Big Tomatoes", buyer: "Ade Coker", amount: "₦12,000", status: "Confirmed", date: "21 Jan 2025" },
-  { order: "#1154", item: "Cassava", buyer: "Halima Musa", amount: "₦8,500", status: "In Transit", date: "18 Jan 2025" },
-  { order: "#1098", item: "Yam", buyer: "Emeka Obi", amount: "₦22,000", status: "Delivered", date: "10 Jan 2025" },
+  {
+    order: "#1284",
+    item: "Big Tomatoes",
+    buyer: "Ade Coker",
+    amount: "₦12,000",
+    status: "Confirmed",
+    date: "21 Jan 2025",
+  },
+  {
+    order: "#1154",
+    item: "Cassava",
+    buyer: "Halima Musa",
+    amount: "₦8,500",
+    status: "In Transit",
+    date: "18 Jan 2025",
+  },
+  {
+    order: "#1098",
+    item: "Yam",
+    buyer: "Emeka Obi",
+    amount: "₦22,000",
+    status: "Delivered",
+    date: "10 Jan 2025",
+  },
 ];
 
 const activityLog = [
-  { event: "Order #1284 confirmed", detail: "Big Tomatoes — 5kg", time: "2m ago", icon: ShieldCheck, color: "text-emerald-600 bg-emerald-50" },
-  { event: "Listing published", detail: "Fresh Onions — ₦750/kg", time: "52m ago", icon: Package, color: "text-sky-600 bg-sky-50" },
-  { event: "Order #1154 shipped", detail: "Cassava — in transit", time: "1d ago", icon: ShieldCheck, color: "text-emerald-600 bg-emerald-50" },
-  { event: "Dispute #07 opened", detail: "Order #1098 · Quality issue", time: "1w ago", icon: AlertTriangle, color: "text-rose-600 bg-rose-50" },
+  {
+    event: "Order #1284 confirmed",
+    detail: "Big Tomatoes — 5kg",
+    time: "2m ago",
+    icon: ShieldCheck,
+    color: "text-emerald-600 bg-emerald-50",
+  },
+  {
+    event: "Listing published",
+    detail: "Fresh Onions — ₦750/kg",
+    time: "52m ago",
+    icon: Package,
+    color: "text-sky-600 bg-sky-50",
+  },
+  {
+    event: "Order #1154 shipped",
+    detail: "Cassava — in transit",
+    time: "1d ago",
+    icon: ShieldCheck,
+    color: "text-emerald-600 bg-emerald-50",
+  },
+  {
+    event: "Dispute #07 opened",
+    detail: "Order #1098 · Quality issue",
+    time: "1w ago",
+    icon: AlertTriangle,
+    color: "text-rose-600 bg-rose-50",
+  },
 ];
 
 export default function FarmerProfile() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const [farmer, setFarmer] = useState<Farmer | null>(null);
+  const [farmerOverview, setFarmerOverview] = useState<FarmerPayload | null>(
+    null,
+  );
+
+  const params = useParams();
+  const farmerId = Number(params.id);
+
+  useEffect(() => {
+    const handleFarmerProfile = async (farmerId: number) => {
+      try {
+        const response = await getFarmer(farmerId);
+        setFarmer(response);
+        console.log("Farmer profile data:", response);
+      } catch (error) {
+        getErrorMessage(error);
+      }
+    };
+    handleFarmerProfile(farmerId);
+  }, [farmerId]);
+
+  useEffect(() => {
+    const handleFarmerOverview = async (farmerId: number) => {
+      try {
+        const response = await getFarmer(farmerId);
+        setFarmerOverview(response);
+        console.log("Farmer overview data:", response);
+      } catch (error) {
+        getErrorMessage(error);
+      }
+    };
+    handleFarmerOverview(farmerId);
+  }, [farmerId]);
 
   return (
-    <Layout breadcrumb="Users / Farmers / Musa Ibrahim" compact>
+    <Layout
+      breadcrumb={`Users / Farmers / ${farmer?.name ?? "Farmer Profile"}`}
+      compact
+    >
       {/* Back */}
       <button
         onClick={() => navigate("/users")}
@@ -56,17 +134,21 @@ export default function FarmerProfile() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <Avatar name="Musa Ibrahim" size="lg" />
+              <Avatar name={farmer?.name ?? "F"} size="lg" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-semibold text-slate-900">Musa Ibrahim</h1>
+                <h1 className="text-xl font-semibold text-slate-900">
+                  {farmer?.name}
+                </h1>
                 <StatusBadge status="Active" />
               </div>
-              <p className="mt-0.5 text-sm text-slate-500">FAR-01923</p>
+              <p className="mt-0.5 text-sm text-slate-500">
+                {farmer?.phone_number}
+              </p>
               <div className="mt-1 flex items-center gap-1 text-sm text-slate-500">
                 <MapPin className="h-3.5 w-3.5" />
-                Kagarko, Kaduna State
+                {farmer?.lga}, {farmer?.state}
               </div>
             </div>
           </div>
@@ -83,15 +165,21 @@ export default function FarmerProfile() {
         {/* Stats */}
         <div className="mt-6 grid grid-cols-3 divide-x divide-slate-100 rounded-2xl bg-global-bg">
           <div className="px-6 py-4 text-center">
-            <p className="text-2xl font-semibold text-slate-900">12</p>
+            <p className="text-2xl font-semibold text-slate-900">
+              {farmer?.listings_count}
+            </p>
             <p className="mt-0.5 text-xs text-slate-500">Listings</p>
           </div>
           <div className="px-6 py-4 text-center">
-            <p className="text-2xl font-semibold text-slate-900">34</p>
+            <p className="text-2xl font-semibold text-slate-900">
+              {farmer?.orders_count}
+            </p>
             <p className="mt-0.5 text-xs text-slate-500">Completed Orders</p>
           </div>
           <div className="px-6 py-4 text-center">
-            <p className="text-2xl font-semibold text-slate-900">₦100,000</p>
+            <p className="text-2xl font-semibold text-slate-900">
+              ₦{farmer?.total_earned?.toLocaleString()}
+            </p>
             <p className="mt-0.5 text-xs text-slate-500">Total Earnings</p>
           </div>
         </div>
@@ -110,10 +198,14 @@ export default function FarmerProfile() {
             >
               {tab}
               {tab === "Listings" && (
-                <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">3</span>
+                <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+                  {farmer?.listings_count ?? 0}
+                </span>
               )}
               {tab === "Orders" && (
-                <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">3</span>
+                <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+                  {farmer?.orders_count ?? 0}
+                </span>
               )}
             </button>
           ))}
@@ -121,8 +213,10 @@ export default function FarmerProfile() {
 
         {/* Tab content */}
         <div className="mt-6">
-          {activeTab === "Overview" && <OverviewTab />}
-          {activeTab === "Listings" && <ListingsTab />}
+          {activeTab === "Overview" && (
+            <OverviewTab farmerOverview={farmerOverview} farmer={farmer} />
+          )}
+          {activeTab === "Listings" && <ListingsTab farmer={farmer} />}
           {activeTab === "Orders" && <OrdersTab />}
           {activeTab === "Activity Log" && <ActivityLogTab />}
         </div>
@@ -131,50 +225,69 @@ export default function FarmerProfile() {
   );
 }
 
-function OverviewTab() {
+function OverviewTab({
+  farmerOverview,
+  farmer,
+}: {
+  farmerOverview: FarmerPayload | null;
+  farmer: Farmer | null;
+}) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* Farm Information */}
       <div className="space-y-5">
         <div className="rounded-2xl border border-slate-100 p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-800">Farm Information</h3>
+          <h3 className="mb-4 text-sm font-semibold text-slate-800">
+            Farm Information
+          </h3>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-slate-500">Farm Name</dt>
-              <dd className="font-medium text-slate-800">Ibrahim Family Farm</dd>
+              <dd className="font-medium text-slate-800">
+                {farmerOverview?.farm_name ?? "Ibrahim Family Farm"}
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Location</dt>
-              <dd className="font-medium text-slate-800">4.3 Hectares</dd>
+              <dd className="font-medium text-slate-800">{`${farmerOverview?.lga}, ${farmerOverview?.state}`}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Farming method</dt>
-              <dd className="font-medium text-slate-800">Mixed Farming</dd>
+              <dd className="font-medium text-slate-800">
+                {farmerOverview?.farming_method ?? "Mixed Farming"}
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Hometown</dt>
-              <dd className="font-medium text-slate-800">Kabarira village, Kagarko LGA, Kaduna State</dd>
+              <dd className="font-medium text-slate-800">
+                {farmerOverview?.lga}
+              </dd>
             </div>
           </dl>
         </div>
 
         <div className="rounded-2xl border border-slate-100 p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-800">Top Products</h3>
+          <h3 className="mb-4 text-sm font-semibold text-slate-800">
+            Top Products
+          </h3>
           <div className="space-y-3">
-            {[
-              { name: "Rice", emoji: "🌾", listings: 4, status: "Live" },
-              { name: "Yam", emoji: "🍠", listings: 2, status: "Live" },
-              { name: "Cassava", emoji: "🥔", listings: 3, status: "Pending" },
-            ].map((p) => (
-              <div key={p.name} className="flex items-center justify-between rounded-xl bg-global-bg px-4 py-3">
+            {farmer?.listings?.slice(0, 3).map((produce) => (
+              <div
+                key={produce.produce.name}
+                className="flex items-center justify-between rounded-xl bg-global-bg px-4 py-3"
+              >
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">{p.emoji}</span>
+                  <img className="text-xl" src={produce.produce.image_url} />
                   <div>
-                    <p className="text-sm font-medium text-slate-800">{p.name}</p>
-                    <p className="text-xs text-slate-500">{p.listings} listings</p>
+                    <p className="text-sm font-medium text-slate-800">
+                      {produce.produce.name}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {farmer.listings_count} listings
+                    </p>
                   </div>
                 </div>
-                <StatusBadge status={p.status} />
+                <StatusBadge status={produce.status} />
               </div>
             ))}
           </div>
@@ -184,51 +297,64 @@ function OverviewTab() {
       {/* Personal Information + History */}
       <div className="space-y-5">
         <div className="rounded-2xl border border-slate-100 p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-800">Personal Information</h3>
+          <h3 className="mb-4 text-sm font-semibold text-slate-800">
+            Personal Information
+          </h3>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-slate-500">Full Name</dt>
-              <dd className="font-medium text-slate-800">Musa Ibrahim</dd>
+              <dd className="font-medium text-slate-800">{farmer?.name}</dd>
             </div>
+
             <div className="flex justify-between">
-              <dt className="text-slate-500">Age</dt>
-              <dd className="font-medium text-slate-800">38</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-slate-500">Hometown</dt>
-              <dd className="font-medium text-slate-800">Kaduna State</dd>
+              <dt className="text-slate-500">State</dt>
+              <dd className="font-medium text-slate-800">
+                {farmer?.state} State
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Experience</dt>
-              <dd className="font-medium text-slate-800">5 years</dd>
+              <dd className="font-medium text-slate-800">
+                {farmerOverview?.experience || "Not specified"}
+              </dd>
             </div>
             <div className="flex items-center justify-between">
               <dt className="flex items-center gap-1.5 text-slate-500">
                 <Phone className="h-3.5 w-3.5" /> Phone
               </dt>
-              <dd className="font-medium text-slate-800">+234 803 500 7062</dd>
+              <dd className="font-medium text-slate-800">
+                {farmer?.phone_number || "Not specified"}
+              </dd>
             </div>
             <div className="flex items-center justify-between">
               <dt className="flex items-center gap-1.5 text-slate-500">
                 <Mail className="h-3.5 w-3.5" /> Email
               </dt>
-              <dd className="font-medium text-slate-800">musa.ibrahim@farm.ng</dd>
+              <dd className="font-medium text-slate-800">
+                {farmer?.email || "Not specified"}
+              </dd>
             </div>
           </dl>
         </div>
 
         <div className="rounded-2xl border border-slate-100 p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-800">History Timeline</h3>
+          <h3 className="mb-4 text-sm font-semibold text-slate-800">
+            History Timeline
+          </h3>
           <div className="space-y-3">
             {activityLog.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <div key={idx} className="flex items-start gap-3">
-                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${item.color}`}>
+                  <div
+                    className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${item.color}`}
+                  >
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-800">{item.event}</p>
+                    <p className="text-sm font-medium text-slate-800">
+                      {item.event}
+                    </p>
                     <p className="text-xs text-slate-500">{item.detail}</p>
                   </div>
                   <p className="shrink-0 text-xs text-slate-400">{item.time}</p>
@@ -242,7 +368,7 @@ function OverviewTab() {
   );
 }
 
-function ListingsTab() {
+function ListingsTab({ farmer }: { farmer: Farmer | null }) {
   return (
     <table className="w-full text-left text-sm">
       <thead>
@@ -254,22 +380,29 @@ function ListingsTab() {
         </tr>
       </thead>
       <tbody>
-        {farmerListings.map((item, idx) => (
+        {farmer?.listings?.map((item, idx) => (
           <tr key={idx} className="border-t border-slate-100">
             <td className="py-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-global-bg text-xl">
-                  {item.emoji}
-                </div>
+                <img
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-global-bg text-xl"
+                  src={item.produce.image_url}
+                />
                 <div>
-                  <p className="font-medium text-slate-900">{item.name}</p>
-                  <p className="text-xs text-slate-400">{item.category}</p>
+                  <p className="font-medium text-slate-900">
+                    {item.produce.name}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {item.produce.category.name}
+                  </p>
                 </div>
               </div>
             </td>
             <td className="py-3 font-medium text-primary">{item.price}</td>
             <td className="py-3 text-slate-600">{item.stock}</td>
-            <td className="py-3"><StatusBadge status={item.status} /></td>
+            <td className="py-3">
+              <StatusBadge status={item.status} />
+            </td>
           </tr>
         ))}
       </tbody>
@@ -299,7 +432,9 @@ function OrdersTab() {
             <td className="py-3 text-slate-600">{order.buyer}</td>
             <td className="py-3 font-medium text-slate-900">{order.amount}</td>
             <td className="py-3 text-slate-500">{order.date}</td>
-            <td className="py-3"><StatusBadge status={order.status} /></td>
+            <td className="py-3">
+              <StatusBadge status={order.status} />
+            </td>
           </tr>
         ))}
       </tbody>
@@ -313,8 +448,13 @@ function ActivityLogTab() {
       {activityLog.map((item, idx) => {
         const Icon = item.icon;
         return (
-          <div key={idx} className="flex items-start gap-4 rounded-2xl bg-global-bg px-5 py-4">
-            <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.color}`}>
+          <div
+            key={idx}
+            className="flex items-start gap-4 rounded-2xl bg-global-bg px-5 py-4"
+          >
+            <div
+              className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.color}`}
+            >
               <Icon className="h-4 w-4" />
             </div>
             <div className="flex-1">

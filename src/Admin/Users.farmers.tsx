@@ -56,7 +56,7 @@ export default function Users() {
               Filter
             </button>
             <button
-              onClick={() => navigate("/users/add")}
+              onClick={() => navigate("/farmers/add")}
               className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
@@ -106,7 +106,7 @@ export default function Users() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/users/${farmer.id}`);
+                      navigate(`/farmers/${farmer.id}`);
                     }}
                     className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
                   >

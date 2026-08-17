@@ -10,9 +10,7 @@ export interface Farmer {
   lga: string;
   status: FarmerStatus;
   phone_number: string;
-  // Present on list responses
   listings_count?: number;
-  // Present on single-farmer (get one) responses
   orders_count?: number;
   total_earned?: string;
   listings?: Listing[];
