@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Paperclip, Send } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
@@ -63,6 +64,10 @@ export default function Disputes() {
   const [draft, setDraft] = useState("");
   const { count } = useCart();
   const selected = disputes[selectedIdx];
+
+  const handleDisputes = async()=>{
+
+  }
 
   return (
     <BuyerLayout breadcrumb="Disputes / My Disputes" cartCount={count}>
