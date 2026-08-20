@@ -1,6 +1,13 @@
 import api from "../api";
 import type { Category } from "../types/category";
 
+// Public — no auth required
+export const getPublicCategories = async (): Promise<Category[]> => {
+  const response = await api.get("/categories");
+  return response.data.data;
+};
+
+// Admin
 export const getCategories = async (): Promise<Category[]> => {
   const response = await api.get("/admin/categories");
   return response.data.data;

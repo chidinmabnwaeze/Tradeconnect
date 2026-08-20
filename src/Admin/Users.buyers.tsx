@@ -1,36 +1,59 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, Funnel } from "lucide-react";
 import Layout from "../components/Layout";
 import Avatar from "../components/Avatar";
 import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
+import { getBuyers } from "../lib/services/buyers.service";
+import { getErrorMessage } from "../lib/getErrorMessage";
+import {type Buyer } from "../lib/types/buyer";
 
-interface Buyer {
-  name: string;
-  code: string;
-  location: string;
-  orders: number;
-  status: "Active" | "Inactive";
-}
+// interface Buyer {
+//   name: string;
+//   code: string;
+//   location: string;
+//   orders: number;
+//   status: "Active" | "Inactive";
+// }
 
-const buyers: Buyer[] = [
-  { name: "Adekunle Okafor", code: "BYR-07820", location: "Kaduna", orders: 14, status: "Active" },
-  { name: "Hauwa Makurdi", code: "BYR-07820", location: "Kano", orders: 8, status: "Active" },
-  { name: "Ibrahim Yusuf", code: "BYR-07820", location: "Zaria", orders: 22, status: "Inactive" },
-  { name: "Fatima Idris", code: "BYR-07820", location: "Katsina", orders: 3, status: "Active" },
-  { name: "Musa Lawal", code: "BYR-07820", location: "Rivers", orders: 0, status: "Inactive" },
-  { name: "Aisha Bello", code: "BYR-07820", location: "Edo", orders: 31, status: "Active" },
-  { name: "Umar Daniyawa", code: "BYR-07820", location: "Zamfara", orders: 2, status: "Active" },
-  { name: "Musa Ibrahim", code: "BYR-07820", location: "Yobe", orders: 2, status: "Active" },
-  { name: "Musa Ibrahim", code: "BYR-07820", location: "Lagos", orders: 12, status: "Active" },
-  { name: "Musa Ibrahim", code: "BYR-07820", location: "Enugu", orders: 30, status: "Inactive" },
-];
+// const buyers: Buyer[] = [
+//   { name: "Adekunle Okafor", code: "BYR-07820", location: "Kaduna", orders: 14, status: "Active" },
+//   { name: "Hauwa Makurdi", code: "BYR-07820", location: "Kano", orders: 8, status: "Active" },
+//   { name: "Ibrahim Yusuf", code: "BYR-07820", location: "Zaria", orders: 22, status: "Inactive" },
+//   { name: "Fatima Idris", code: "BYR-07820", location: "Katsina", orders: 3, status: "Active" },
+//   { name: "Musa Lawal", code: "BYR-07820", location: "Rivers", orders: 0, status: "Inactive" },
+//   { name: "Aisha Bello", code: "BYR-07820", location: "Edo", orders: 31, status: "Active" },
+//   { name: "Umar Daniyawa", code: "BYR-07820", location: "Zamfara", orders: 2, status: "Active" },
+//   { name: "Musa Ibrahim", code: "BYR-07820", location: "Yobe", orders: 2, status: "Active" },
+//   { name: "Musa Ibrahim", code: "BYR-07820", location: "Lagos", orders: 12, status: "Active" },
+//   { name: "Musa Ibrahim", code: "BYR-07820", location: "Enugu", orders: 30, status: "Inactive" },
+// ];
 
 const PAGE_SIZE = 10;
 
 export default function Buyers() {
   const [page, setPage] = useState(1);
+  const [buyers, setBuyers] = useState<Buyer[]>([]);
+  const [loading, setLoading] = useState(false);
+ 
   const pageCount = Math.ceil(buyers.length / PAGE_SIZE) || 1;
+
+  useEffect(() => {
+    const fetchBuyers = async () => {
+      setLoading(true);
+      try {
+        const response = await getBuyers({ page, per_page: PAGE_SIZE });
+        console.log("Buyers response:", response);
+        setBuyers(response.data);
+        console.log("Buyers data:", response.data);
+      } catch (error) {
+        getErrorMessage(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBuyers();
+  }, [page]);
 
   return (
     <Layout breadcrumb="Users / Buyers" compact>
@@ -58,6 +81,16 @@ export default function Buyers() {
             </tr>
           </thead>
           <tbody>
+   {loading && (
+              <tr>
+                <td colSpan={5} className="py-26 m-auto">
+                  <div className="flex justify-center items-center">
+                    <div className="loader"></div>
+                  </div>
+                </td>
+              </tr>
+            )}
+
             {buyers.map((buyer, idx) => (
               <tr key={idx} className="border-t border-slate-100">
                 <td className="py-3">
@@ -65,12 +98,12 @@ export default function Buyers() {
                     <Avatar name={buyer.name} />
                     <div>
                       <p className="font-medium text-slate-900">{buyer.name}</p>
-                      <p className="text-xs text-slate-400">{buyer.code}</p>
+                      <p className="text-xs text-slate-400">{buyer.email}</p>
                     </div>
                   </div>
                 </td>
-                <td className="py-3 text-slate-600">{buyer.location}</td>
-                <td className="py-3 text-slate-600">{buyer.orders}</td>
+                <td className="py-3 text-slate-600">{buyer.address}</td>
+                <td className="py-3 text-slate-600">{buyer.orders_count}</td>
                 <td className="py-3">
                   <StatusBadge status={buyer.status} />
                 </td>

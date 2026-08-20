@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import Avatar from "./Avatar";
+import Logout from "./Logout";
 
 interface NavItem {
   label: string;
@@ -59,6 +60,13 @@ export default function Layout({
     location.pathname.startsWith("/users") || location.pathname === "/buyers";
   const [usersOpen, setUsersOpen] = useState(usersSectionActive);
 
+  const getCurrentDate = () => {
+    const date = Intl.DateTimeFormat("en-US", { dateStyle: "full" }).format(
+      new Date(),
+    );
+    return date;
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-global-bg gap-4 p-4">
       {/* Sidebar — fixed width, full height */}
@@ -70,7 +78,9 @@ export default function Layout({
           </div>
           <div>
             <p className="text-xs font-medium text-white/60">TradeConnect</p>
-            <h2 className="text-base font-semibold text-white leading-tight">Admin Portal</h2>
+            <h2 className="text-base font-semibold text-white leading-tight">
+              Admin Portal
+            </h2>
           </div>
         </div>
 
@@ -108,7 +118,9 @@ export default function Layout({
                             key={child.path}
                             to={child.path}
                             className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
-                              active ? "text-white" : "text-white/40 hover:text-white"
+                              active
+                                ? "text-white"
+                                : "text-white/40 hover:text-white"
                             }`}
                           >
                             {child.label}
@@ -141,15 +153,14 @@ export default function Layout({
 
         {/* Bottom — Settings & Logout pushed to bottom */}
         <div className="mt-auto border-t border-white/10 px-4 py-4">
-          <p className="mb-3 px-2 text-[10px] uppercase tracking-[0.25em] text-white/30">Manage</p>
+          <p className="mb-3 px-2 text-[10px] uppercase tracking-[0.25em] text-white/30">
+            Manage
+          </p>
           <button className="flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium text-white/50 hover:bg-white/10 hover:text-white transition">
             <span>Settings</span>
             <Settings className="h-4 w-4" />
           </button>
-          <button className="flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium text-white/50 hover:bg-white/10 hover:text-white transition">
-            <span>Log Out</span>
-            <LogOut className="h-4 w-4" />
-          </button>
+          <Logout />
         </div>
       </aside>
 
@@ -176,13 +187,15 @@ export default function Layout({
           <div className="flex shrink-0 flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm text-slate-500">{breadcrumb}</p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight">{title}</h1>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+                {title}
+              </h1>
               <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <button className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100">
                 <CalendarDays className="mr-2 inline-block h-4 w-4" />
-                Wednesday, 13 May 2026
+                {getCurrentDate()}
               </button>
               <button
                 onClick={onNotificationsClick}

@@ -13,7 +13,7 @@ import Layout from "../components/Layout";
 import Avatar from "../components/Avatar";
 import StatusBadge from "../components/StatusBadge";
 import { getFarmer } from "../lib/services/farmers.service";
-import { type Farmer, type FarmerPayload } from "../lib/types/farmer";
+import { type Farmer } from "../lib/types/farmer";
 import { getErrorMessage } from "../lib/getErrorMessage";
 
 const tabs = ["Overview", "Listings", "Orders", "Activity Log"] as const;
@@ -81,9 +81,6 @@ export default function FarmerProfile() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
   const [farmer, setFarmer] = useState<Farmer | null>(null);
-  const [farmerOverview, setFarmerOverview] = useState<FarmerPayload | null>(
-    null,
-  );
 
   const params = useParams();
   const farmerId = Number(params.id);
@@ -93,7 +90,6 @@ export default function FarmerProfile() {
       try {
         const response = await getFarmer(farmerId);
         setFarmer(response);
-        console.log("Farmer profile data:", response);
       } catch (error) {
         getErrorMessage(error);
       }
@@ -101,18 +97,7 @@ export default function FarmerProfile() {
     handleFarmerProfile(farmerId);
   }, [farmerId]);
 
-  useEffect(() => {
-    const handleFarmerOverview = async (farmerId: number) => {
-      try {
-        const response = await getFarmer(farmerId);
-        setFarmerOverview(response);
-        console.log("Farmer overview data:", response);
-      } catch (error) {
-        getErrorMessage(error);
-      }
-    };
-    handleFarmerOverview(farmerId);
-  }, [farmerId]);
+  
 
   return (
     <Layout
@@ -141,7 +126,7 @@ export default function FarmerProfile() {
                 <h1 className="text-xl font-semibold text-slate-900">
                   {farmer?.name}
                 </h1>
-                <StatusBadge status="Active" />
+                <StatusBadge status={farmer?.status} />
               </div>
               <p className="mt-0.5 text-sm text-slate-500">
                 {farmer?.phone_number}
@@ -178,7 +163,7 @@ export default function FarmerProfile() {
           </div>
           <div className="px-6 py-4 text-center">
             <p className="text-2xl font-semibold text-slate-900">
-              ₦{farmer?.total_earned?.toLocaleString()}
+              ₦{Number(farmer?.total_earned ?? 0).toLocaleString()}
             </p>
             <p className="mt-0.5 text-xs text-slate-500">Total Earnings</p>
           </div>
@@ -213,9 +198,7 @@ export default function FarmerProfile() {
 
         {/* Tab content */}
         <div className="mt-6">
-          {activeTab === "Overview" && (
-            <OverviewTab farmerOverview={farmerOverview} farmer={farmer} />
-          )}
+          {activeTab === "Overview" && <OverviewTab farmer={farmer} />}
           {activeTab === "Listings" && <ListingsTab farmer={farmer} />}
           {activeTab === "Orders" && <OrdersTab />}
           {activeTab === "Activity Log" && <ActivityLogTab />}
@@ -225,13 +208,7 @@ export default function FarmerProfile() {
   );
 }
 
-function OverviewTab({
-  farmerOverview,
-  farmer,
-}: {
-  farmerOverview: FarmerPayload | null;
-  farmer: Farmer | null;
-}) {
+function OverviewTab({ farmer }: { farmer: Farmer | null }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* Farm Information */}
@@ -244,24 +221,22 @@ function OverviewTab({
             <div className="flex justify-between">
               <dt className="text-slate-500">Farm Name</dt>
               <dd className="font-medium text-slate-800">
-                {farmerOverview?.farm_name ?? "Ibrahim Family Farm"}
+                {farmer?.farm?.name ?? "Ibrahim Family Farm"}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Location</dt>
-              <dd className="font-medium text-slate-800">{`${farmerOverview?.lga}, ${farmerOverview?.state}`}</dd>
+              <dd className="font-medium text-slate-800">{`${farmer?.lga}, ${farmer?.state}`}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Farming method</dt>
               <dd className="font-medium text-slate-800">
-                {farmerOverview?.farming_method ?? "Mixed Farming"}
+                {farmer?.farm?.farming_method ?? "Mixed Farming"}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Hometown</dt>
-              <dd className="font-medium text-slate-800">
-                {farmerOverview?.lga}
-              </dd>
+              <dd className="font-medium text-slate-800">{farmer?.lga}</dd>
             </div>
           </dl>
         </div>
@@ -315,7 +290,9 @@ function OverviewTab({
             <div className="flex justify-between">
               <dt className="text-slate-500">Experience</dt>
               <dd className="font-medium text-slate-800">
-                {farmerOverview?.experience || "Not specified"}
+                {farmer?.farm?.years_experience != null
+                  ? `${farmer.farm.years_experience} yrs`
+                  : "Not specified"}
               </dd>
             </div>
             <div className="flex items-center justify-between">

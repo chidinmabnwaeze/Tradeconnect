@@ -2,15 +2,18 @@ import { useState } from "react";
 import { ArrowLeft, CheckCircle, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
-import type { FarmerPayload, FarmerStatus } from "../lib/types/farmer";
+import type { FarmerCreatePayload, FarmerStatus } from "../lib/types/farmer";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { createFarmer } from "../lib/services/farmers.service";
 import { lgasByState, nigerianStates } from "../lib/data/nigeria-lgas";
 
+// Not real produce IDs — the API's primary_produce_ids[] needs the catalog's
+// numeric produce IDs, so this option list stays cosmetic until it's wired
+// to the real produce list.
 const primaryProduceOptions = ["Rice", "Cassava", "Maize", "Vegetables", "Palm Oil", "Yam"];
 const farmingMethods = ["Mixed Farming", "Subsistence", "Commercial", "Organic"];
 
-const emptyPayload: FarmerPayload = {
+const emptyPayload: FarmerCreatePayload = {
   name: "",
   state: "",
   lga: "",
@@ -21,13 +24,12 @@ const emptyPayload: FarmerPayload = {
 export default function AddFarmer() {
   const navigate = useNavigate();
 
-  // Fields actually sent to the API
-  const [payload, setPayload] = useState<FarmerPayload>(emptyPayload);
+  // Fields bound directly to the payload object
+  const [payload, setPayload] = useState<FarmerCreatePayload>(emptyPayload);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
-  // Cosmetic-only fields — the /admin/farmers API doesn't accept or store
-  // these yet, so they stay local until the backend supports them.
+  // Extra profile fields — merged into the payload on submit below.
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [farmName, setFarmName] = useState("");
@@ -110,7 +112,16 @@ export default function AddFarmer() {
 
     setLoading(true);
     try {
-      const created = await createFarmer(payload);
+      const created = await createFarmer({
+        ...payload,
+        email: email.trim() || undefined,
+        address: address.trim() || undefined,
+        farm_name: farmName.trim() || undefined,
+        farm_size_hectares: farmSize ? Number(farmSize) : undefined,
+        farming_method: farmingMethod || undefined,
+        years_experience: experience ? Number(experience) : undefined,
+        farm_address: farmAddress.trim() || undefined,
+      });
       setCreatedFarmerId(created.id);
       setConfirmed(true);
     } catch (err) {

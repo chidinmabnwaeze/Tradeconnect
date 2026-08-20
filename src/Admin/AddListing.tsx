@@ -35,7 +35,10 @@ const AddListing = () => {
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [image, setImage] = useState<File | null>(null);
 
-  // Cosmetic-only — not part of the produce/listing API, kept for the UI design
+  // harvestDate -> available_from, minOrderQty -> minimum_order_quantity on
+  // the listing payload. produceLabel stays cosmetic-only: the API's `label`
+  // enum is fresh/organic/seasonal, but this dropdown offers category-like
+  // options, so there's no valid value to send yet.
   const [harvestDate, setHarvestDate] = useState("");
   const [produceLabel, setProduceLabel] = useState("");
   const [minOrderQty, setMinOrderQty] = useState("");
@@ -67,7 +70,7 @@ const AddListing = () => {
   useEffect(() => {
     const loadFarmers = async () => {
       try {
-        setFarmers(await getFarmers());
+        setFarmers((await getFarmers({ per_page: 100 })).data);
       } catch (err) {
         setError(getErrorMessage(err));
       } finally {
@@ -126,6 +129,11 @@ const AddListing = () => {
         price: Number(price),
         stock: Number(stock),
         status,
+        // `status` alone doesn't control marketplace visibility — the API
+        // requires publication_status: "live" as well.
+        publication_status: status === "active" ? "live" : "pending",
+        minimum_order_quantity: minOrderQty ? Number(minOrderQty) : undefined,
+        available_from: harvestDate || undefined,
       });
 console.log("Listing created successfully");
       navigate("/listings");

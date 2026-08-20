@@ -1,6 +1,6 @@
 import { type AuthUser, type RegisterData } from "./types/auth";
 import { create } from "zustand";
-import { login, register } from "./services/auth.service";
+import { login, logout, register } from "./services/auth.service";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -8,7 +8,7 @@ interface AuthState {
   setIsAuthenticated: (value: boolean) => void;
   login: (email: string, password: string) => Promise<any>;
   register: (registerData: RegisterData) => Promise<any>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const storedUser = localStorage.getItem("user");
@@ -31,7 +31,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     return response;
   },
 
-  logout: () => {
+  logout: async () => {
+    try {
+      await logout();
+    } catch {
+      
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     set({ isAuthenticated: false, user: null });

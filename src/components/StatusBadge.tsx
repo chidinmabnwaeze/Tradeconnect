@@ -10,16 +10,23 @@ const statusStyles: Record<string, string> = {
   inactive: "bg-rose-100 text-rose-700",
   cancelled: "bg-rose-100 text-rose-700",
   open: "bg-rose-100 text-rose-700",
+  under_review: "bg-amber-100 text-amber-700",
+  resolved: "bg-emerald-100 text-emerald-700",
+  closed: "bg-slate-200 text-slate-600",
 };
 
-export default function StatusBadge({ status }: { status: string }) {
-  const style = statusStyles[status.toLowerCase()] ?? "bg-slate-100 text-slate-600";
+export default function StatusBadge({ status }: { status?: string | null }) {
+  const safeStatus =
+    typeof status === "string" && status.trim() ? status.trim() : "Unknown";
+  const style =
+    statusStyles[safeStatus.toLowerCase()] ?? "bg-slate-100 text-slate-600";
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${style}`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {status}
+      {safeStatus}
     </span>
   );
 }

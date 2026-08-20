@@ -8,125 +8,12 @@ import { type Listing } from "../lib/types/listing";
 import { getAllListings } from "../lib/services/listings.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 
-// interface Listing {
-//   name: string;
-//   emoji: string;
-//   category: string;
-//   farmer: string;
-//   farmerCode: string;
-//   price: string;
-//   stock: string;
-//   status: "Live" | "Pending";
-// }
-
-// const listings: Listing[] = [
-//   {
-//     name: "Rice",
-//     emoji: "🌾",
-//     category: "Grains & Cereals",
-//     farmer: "Musa Ibrahim",
-//     farmerCode: "FAR-01923",
-//     price: "₦180/kg",
-//     stock: "200kg",
-//     status: "Pending",
-//   },
-//   {
-//     name: "Yam",
-//     emoji: "🍠",
-//     category: "Roots & Tubers",
-//     farmer: "Muhibba Musa",
-//     farmerCode: "FAR-02963",
-//     price: "₦180/kg",
-//     stock: "180kg",
-//     status: "Live",
-//   },
-//   {
-//     name: "Cassava",
-//     emoji: "🥔",
-//     category: "Roots & Tubers",
-//     farmer: "Muhibba Musa",
-//     farmerCode: "FAR-02963",
-//     price: "₦220/kg",
-//     stock: "120kg",
-//     status: "Live",
-//   },
-//   {
-//     name: "Plantains",
-//     emoji: "🍌",
-//     category: "Fruits",
-//     farmer: "Musa Ibrahim",
-//     farmerCode: "FAR-01923",
-//     price: "₦650/kg",
-//     stock: "100kg",
-//     status: "Live",
-//   },
-//   {
-//     name: "Sweet Potatoes",
-//     emoji: "🍠",
-//     category: "Roots & Tubers",
-//     farmer: "Musa Ibrahim",
-//     farmerCode: "FAR-01923",
-//     price: "₦100/kg",
-//     stock: "50kg",
-//     status: "Live",
-//   },
-//   {
-//     name: "Maize (Corn)",
-//     emoji: "🌽",
-//     category: "Grains & Cereals",
-//     farmer: "Musa Ibrahim",
-//     farmerCode: "FAR-01923",
-//     price: "₦180/kg",
-//     stock: "200kg",
-//     status: "Pending",
-//   },
-//   {
-//     name: "Okra",
-//     emoji: "🌿",
-//     category: "Vegetables",
-//     farmer: "Musa Ibrahim",
-//     farmerCode: "FAR-01923",
-//     price: "₦180/kg",
-//     stock: "100kg",
-//     status: "Live",
-//   },
-//   {
-//     name: "Egusi Melon",
-//     emoji: "🍈",
-//     category: "Roots & Tubers",
-//     farmer: "Musa Ibrahim",
-//     farmerCode: "FAR-01923",
-//     price: "₦180/kg",
-//     stock: "220kg",
-//     status: "Live",
-//   },
-//   {
-//     name: "Lettuce",
-//     emoji: "🥬",
-//     category: "Vegetables",
-//     farmer: "Musa Ibrahim",
-//     farmerCode: "FAR-01923",
-//     price: "₦180/kg",
-//     stock: "220kg",
-//     status: "Pending",
-//   },
-//   {
-//     name: "Spinach",
-//     emoji: "🥬",
-//     category: "Vegetables",
-//     farmer: "Musa Ibrahim",
-//     farmerCode: "FAR-01923",
-//     price: "₦180/kg",
-//     stock: "220kg",
-//     status: "Pending",
-//   },
-// ];
-
 const PAGE_SIZE = 10;
 
 export default function Listings() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const pageCount = Math.ceil(listings.length / PAGE_SIZE) || 1;
   const navigate = useNavigate();
@@ -134,11 +21,14 @@ export default function Listings() {
 
   useEffect(() => {
     const fetchlistings = async () => {
+      setLoading(true);
       try {
-        const response = await getAllListings();
-        setListings(response);
+        const response = await getAllListings({ per_page: 100 });
+        setListings(response.data);
       } catch (err) {
         setError(getErrorMessage(err));
+      } finally {
+        setLoading(false);
       }
     };
     fetchlistings();
@@ -188,6 +78,16 @@ export default function Listings() {
             </tr>
           </thead>
           <tbody>
+   {loading && (
+              <tr>
+                <td colSpan={5} className="py-26 m-auto">
+                  <div className="flex justify-center items-center">
+                    <div className="loader"></div>
+                  </div>
+                </td>
+              </tr>
+            )}
+
             {listings.map((listing, idx) => (
               <tr key={idx} className="border-t border-slate-100">
                 <td className="py-3">

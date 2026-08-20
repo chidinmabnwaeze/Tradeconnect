@@ -21,7 +21,10 @@ import {
 } from "recharts";
 import Layout from "../components/Layout";
 import { type DashboardStats } from "../lib/types/dashboard";
+import { type AuthUser } from "../lib/types/auth";
 import { getDashboardStats } from "../lib/services/dashboard.service";
+import { getCurrentUser } from "../lib/services/auth.service";
+import { getErrorMessage } from "../lib/getErrorMessage";
 
 const revenueData = [
   { month: "Jan", revenue: 22 },
@@ -139,6 +142,7 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(
     null,
   );
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   const stats = [
     {
@@ -181,11 +185,34 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const response = await getCurrentUser();
+        setUser(response);
+      } catch (error) {
+        getErrorMessage(error);
+      }
+    };
+    getUser();
+  }, []);
+
+  const getGreeting = () => {
+    const currentHour  = new Date().getHours();
+    if (currentHour < 12) {
+      return "Good morning";
+    } else if (currentHour < 18) {
+      return "Good afternoon";
+    } else {
+      return "Good evening";
+    }
+  }
+
   return (
     <>
       <Layout
         breadcrumb="Dashboard / Overview"
-        title="Good morning, Marsai!"
+        title={`${getGreeting()}, ${user?.name || "there"}!`}
         subtitle="Here's what's happening on TradeConnect today."
         onNotificationsClick={() => setShowNotifications(true)}
       >

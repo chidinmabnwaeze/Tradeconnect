@@ -23,14 +23,14 @@ export default function Users() {
       f.lga.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const pageCount = Math.ceil(filtered?.length ?? 0 / PAGE_SIZE) || 1;
+  const pageCount = Math.ceil((filtered?.length ?? 0) / PAGE_SIZE) || 1;
   const paginated = filtered?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   useEffect(() => {
     const fetchFarmers = async () => {
       setLoading(true);
-      const response = await getFarmers();
-      setFarmers(response);
+      const response = await getFarmers({ per_page: 100 });
+      setFarmers(response.data);
       setLoading(false);
     };
     fetchFarmers();
@@ -76,7 +76,15 @@ export default function Users() {
             </tr>
           </thead>
           <tbody>
-             {loading && <div className="loader flex justify-center items-center"></div>}
+            {loading && (
+              <tr>
+                <td colSpan={5} className="py-26 m-auto">
+                  <div className="flex justify-center items-center">
+                    <div className="loader"></div>
+                  </div>
+                </td>
+              </tr>
+            )}
             
             {paginated?.map((farmer) => (
               <tr
