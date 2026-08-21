@@ -6,6 +6,7 @@ const statusStyles: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700",
   processing: "bg-amber-100 text-amber-700",
   "in transit": "bg-sky-100 text-sky-700",
+  in_transit: "bg-sky-100 text-sky-700",
   new: "bg-sky-100 text-sky-700",
   inactive: "bg-rose-100 text-rose-700",
   cancelled: "bg-rose-100 text-rose-700",

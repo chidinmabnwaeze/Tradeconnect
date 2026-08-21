@@ -245,7 +245,7 @@ export default function Orders() {
                   </div>
                 </td>
                 <td className="py-3 text-slate-600">{order.buyer?.name}</td>
-                <td className="py-3 text-slate-600">{order.quantity} {order.items?.unit}</td>
+                <td className="py-3 text-slate-600">{order.quantity} {order.items?.[0]?.unit}</td>
                 <td className="py-3 text-slate-600">{order.total}</td>
                 <td className="py-3">
                   <StatusBadge status={order.status} />
