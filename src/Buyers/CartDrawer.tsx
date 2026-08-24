@@ -38,34 +38,42 @@ export default function CartDrawer({
           ) : (
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-global-bg text-2xl">
-                    {item.emoji}
-                  </div>
+                <div key={item.listing_id} className="flex items-center gap-3">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.produce_name}
+                      className="h-14 w-14 shrink-0 rounded-xl object-cover bg-global-bg"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-global-bg text-sm font-semibold text-slate-500">
+                      {item.produce_name.charAt(0)}
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-900">{item.name}</p>
-                    <p className="text-xs text-slate-400">{item.category}</p>
+                    <p className="truncate text-sm font-medium text-slate-900">{item.produce_name}</p>
+                    <p className="text-xs text-slate-400">{item.category_name}</p>
                     <p className="mt-0.5 text-xs font-semibold text-primary">
                       {formatNaira(item.price)}/{item.unit}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-1.5 py-1">
                     <button
-                      onClick={() => updateQty(item.id, item.qty - 1)}
+                      onClick={() => updateQty(item.listing_id, item.quantity - 1)}
                       className="flex h-6 w-6 items-center justify-center text-slate-500 hover:text-slate-900"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
-                    <span className="w-5 text-center text-sm font-medium">{item.qty}</span>
+                    <span className="w-5 text-center text-sm font-medium">{item.quantity}</span>
                     <button
-                      onClick={() => updateQty(item.id, item.qty + 1)}
+                      onClick={() => updateQty(item.listing_id, item.quantity + 1)}
                       className="flex h-6 w-6 items-center justify-center text-slate-500 hover:text-slate-900"
                     >
                       <Plus className="h-3 w-3" />
                     </button>
                   </div>
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.listing_id)}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-rose-500 hover:bg-rose-50"
                   >
                     <Trash2 className="h-4 w-4" />

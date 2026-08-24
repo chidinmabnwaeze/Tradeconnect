@@ -9,8 +9,7 @@ import type { Category } from "../lib/types/category";
 import { getActiveListings } from "../lib/services/listings.service";
 import { type Listing } from "../lib/types/listing";
 import { getPublicCategories } from "../lib/services/categories.service";
-import type { Order } from "../lib/types/order";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 const ALL_PRODUCE = "All Produce";
 
@@ -95,17 +94,8 @@ export const Marketplace = () => {
   }, []);
 
   const addToCart = (product: Listing) => {
-    addItem({
-      id: String(product.id),
-      name: product.produce.name,
-      image: product.primary_image_url ?? product.produce.image_url,
-      category: product.produce.category.name,
-      location: `${product.farmer.state} - ${product.farmer.lga}`,
-      price: Number(product.price),
-      unit: product.unit ?? "unit",
-    });
-    // show a simple success toast after adding
-    toast(`${product.produce.name} successfully added to cart`);
+    addItem(product);
+    toast.success(`${product.produce.name} successfully added to cart`);
   };
 
   return (
@@ -114,6 +104,7 @@ export const Marketplace = () => {
       cartCount={count}
       onCartClick={() => setCartOpen(true)}
     >
+    <ToastContainer/>
       <main className="pb-6">
         <section className="banner-primary flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
@@ -196,7 +187,7 @@ export const Marketplace = () => {
                   <span className="inline-block rounded-full bg-global-bg px-2.5 py-0.5 text-[11px] font-medium text-slate-500">
                     {product.produce.category.name}
                   </span>
-                  <p className="mt-2 font-semibold text-slate-900">
+                  <p className="mt-2 font-semibold text-slate-900 capitalize">
                     {product.produce.name}
                   </p>
                   <p className="mt-1 flex items-center gap-1 text-xs text-slate-400">
@@ -211,21 +202,7 @@ export const Marketplace = () => {
                       {formatNaira(Number(product.price))}/{product.unit}
                     </p>
                     <button
-                      onClick={
-                        addToCart(product)
-                        // () =>
-                        // addItem({
-                        //   id: String(product.id),
-                        //   name: product.produce.name,
-                        //   image:
-                        //     product.primary_image_url ??
-                        //     product.produce.image_url,
-                        //   category: product.produce.category.name,
-                        //   location: `${product.farmer.state} - ${product.farmer.lga}`,
-                        //   price: Number(product.price),
-                        //   unit: product.unit ?? "unit",
-                        // })
-                      }
+                      onClick={() => addToCart(product)}
                       className="flex items-center gap-1 rounded-lg bg-[#4A7C2A] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#3A6C1A]"
                     >
                       <Plus className="h-3.5 w-3.5" />

@@ -31,20 +31,28 @@ export default function OrderSummaryModal({
 
         <div className="max-h-64 space-y-4 overflow-y-auto pr-1">
           {items.map((item) => (
-            <div key={item.id} className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-global-bg text-xl">
-                {item.emoji}
-              </div>
+            <div key={item.listing_id} className="flex items-center gap-3">
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt={item.produce_name}
+                  className="h-12 w-12 shrink-0 rounded-xl object-cover bg-global-bg"
+                />
+              ) : (
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-global-bg text-sm font-semibold text-slate-500">
+                  {item.produce_name.charAt(0)}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-slate-900">{item.name}</p>
-                <p className="text-xs text-slate-400">{item.category}</p>
+                <p className="truncate text-sm font-medium text-slate-900">{item.produce_name}</p>
+                <p className="text-xs text-slate-400">{item.category_name}</p>
               </div>
               <p className="text-xs text-slate-500">
-                {item.qty}
+                {item.quantity}
                 {item.unit}
               </p>
               <p className="w-20 text-right text-sm font-semibold text-slate-900">
-                {formatNaira(item.qty * item.price)}
+                {formatNaira(item.quantity * item.price)}
               </p>
             </div>
           ))}

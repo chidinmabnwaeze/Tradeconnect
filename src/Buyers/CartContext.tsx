@@ -1,24 +1,22 @@
 import { createContext, useContext, useMemo, useState } from "react";
+import type { CreateOrderItemPayload } from "../lib/types/order";
+import type { Listing } from "../lib/types/listing";
 
-export interface Product {
-  id: string;
-  name: string;
-  image: string;
-  category: string;
-  location: string;
-  price: number;
+// listing_id doubles as the identity POST /orders needs — price/name/etc are
+// display-only, the backend recomputes unit_price/discount/line_total itself.
+export interface CartItem extends CreateOrderItemPayload {
+  produce_name: string;
+  category_name: string;
   unit: string;
-}
-
-export interface CartItem extends Product {
-  qty: number;
+  price: number;
+  image: string | null;
 }
 
 interface CartContextValue {
   items: CartItem[];
-  addItem: (product: Product) => void;
-  removeItem: (id: string) => void;
-  updateQty: (id: string, qty: number) => void;
+  addItem: (listing: Listing) => void;
+  removeItem: (listingId: number) => void;
+  updateQty: (listingId: number, qty: number) => void;
   clear: () => void;
   count: number;
   subtotal: number;
@@ -33,42 +31,70 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const addItem = (product: Product) => {
+  const addItem = (listing: Listing) => {
     setItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing = prev.find((item) => item.listing_id === listing.id);
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+          item.listing_id === listing.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
         );
       }
-      return [...prev, { ...product, qty: 1 }];
+      return [
+        ...prev,
+        {
+          listing_id: listing.id,
+          quantity: 1,
+          produce_name: listing.produce.name,
+          category_name: listing.produce.category.name,
+          unit: listing.unit ?? "unit",
+          price: Number(listing.price),
+          image: listing.primary_image_url ?? listing.produce.image_url,
+        },
+      ];
     });
   };
 
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const removeItem = (listingId: number) => {
+    setItems((prev) => prev.filter((item) => item.listing_id !== listingId));
   };
 
-  const updateQty = (id: string, qty: number) => {
+  const updateQty = (listingId: number, qty: number) => {
     if (qty < 1) return;
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, qty } : item))
+      prev.map((item) =>
+        item.listing_id === listingId ? { ...item, quantity: qty } : item,
+      ),
     );
   };
 
   const clear = () => setItems([]);
 
-  const count = useMemo(() => items.reduce((sum, item) => sum + item.qty, 0), [items]);
+  const count = useMemo(
+    () => items.reduce((sum, item) => sum + item.quantity, 0),
+    [items],
+  );
   const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.qty * item.price, 0),
-    [items]
+    () => items.reduce((sum, item) => sum + item.quantity * item.price, 0),
+    [items],
   );
   const deliveryFee = items.length > 0 ? DELIVERY_FEE : 0;
   const total = subtotal + deliveryFee;
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQty, clear, count, subtotal, deliveryFee, total }}
+      value={{
+        items,
+        addItem,
+        removeItem,
+        updateQty,
+        clear,
+        count,
+        subtotal,
+        deliveryFee,
+        total,
+      }}
     >
       {children}
     </CartContext.Provider>
