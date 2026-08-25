@@ -46,7 +46,11 @@ export default function Checkout() {
 
     try {
       const orderDetails: CreateOrderPayload = {
-        items: items,
+        // items: items,
+        items: items.map((item)=>({
+listing_id: item.listing_id,
+quantity: item.quantity,
+        })),
         delivery_method: form.delivery_method,
         delivery_name: form.delivery_name,
         delivery_phone: form.delivery_phone,

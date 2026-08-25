@@ -5,6 +5,8 @@ import type { Listing } from "../lib/types/listing";
 // listing_id doubles as the identity POST /orders needs — price/name/etc are
 // display-only, the backend recomputes unit_price/discount/line_total itself.
 export interface CartItem extends CreateOrderItemPayload {
+  //  listing_id: number;
+  // quantity: number;
   produce_name: string;
   category_name: string;
   unit: string;

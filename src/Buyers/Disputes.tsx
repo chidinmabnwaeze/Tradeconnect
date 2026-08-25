@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Paperclip, Send } from "lucide-react";
+import { Paperclip, Send , Plus } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
 import StatusBadge from "../components/StatusBadge";
 import { useCart } from "./CartContext";
@@ -103,6 +103,10 @@ export default function Disputes() {
     }
   };
 
+  const handleCreateDispute = async ()=>{
+    
+  }
+
   const canReply = selected?.status !== "resolved" && selected?.status !== "closed";
 
   return (
@@ -110,7 +114,7 @@ export default function Disputes() {
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-primary">{error}</div>
       )}
-      <div className="grid gap-6 pb-10 lg:grid-cols-[340px_1fr]">
+      <div className="grid gap-6 pb-10 lg:grid-cols-[340px_1fr] h-full">
         <div className="rounded-4xl border border-slate-200 bg-white p-4 shadow-sm">
           <input
             value={search}
@@ -118,11 +122,13 @@ export default function Disputes() {
             placeholder="Search disputes..."
             className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
           />
+            <button className={`flex w-full justify-center items-center gap-3 rounded-2xl p-2 mt-4 text-center text-white  bg-primary hover:bg-slate-50 hover:text-primary border border-primary`}> <Plus style={{}} 
+            /> Create New Dispute </button>
 
-          <div className="mt-4 space-y-1">
+          <div className="mt-4 space-y-1 ">
             {loading && <p className="p-3 text-sm text-slate-400">Loading disputes...</p>}
             {!loading && filtered.length === 0 && (
-              <p className="p-3 text-sm text-slate-400">No disputes yet.</p>
+              <p className="p-3 text-sm text-center text-slate-400">No disputes yet.</p>
             )}
             {filtered.map((dispute) => (
               <button
