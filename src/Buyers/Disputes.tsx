@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Paperclip, Send , Plus } from "lucide-react";
+import { Paperclip, Send, Plus } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
 import StatusBadge from "../components/StatusBadge";
 import { useCart } from "./CartContext";
-import type { Dispute } from "../lib/types/dispute";
+import type { CreateDisputePayload, Dispute } from "../lib/types/dispute";
 import {
+  createDispute,
   getMyDispute,
   getMyDisputes,
   markMyDisputeRead,
@@ -13,10 +14,16 @@ import {
 import { getErrorMessage } from "../lib/getErrorMessage";
 
 const formatDate = (value: string) =>
-  new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 
 const formatTime = (value: string) =>
-  new Date(value).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  new Date(value).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
 export default function Disputes() {
   const { count } = useCart();
@@ -33,6 +40,13 @@ export default function Disputes() {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [newDispute, setNewDispute] = useState({
+    order_id: 0,
+    // order_item_id?: ,
+    subject: "",
+    message: "",
+    attachments: [] as File[],
+  });
 
   useEffect(() => {
     const fetchDisputes = async () => {
@@ -65,7 +79,11 @@ export default function Disputes() {
         if (response.is_unread) {
           await markMyDisputeRead(selectedId);
           setDisputes((prev) =>
-            prev.map((d) => (d.id === selectedId ? { ...d, is_unread: false, unread_count: 0 } : d)),
+            prev.map((d) =>
+              d.id === selectedId
+                ? { ...d, is_unread: false, unread_count: 0 }
+                : d,
+            ),
           );
         }
       } catch (err) {
@@ -78,7 +96,9 @@ export default function Disputes() {
   }, [selectedId]);
 
   const filtered = disputes.filter((d) =>
-    `${d.subject} ${d.order.order_number}`.toLowerCase().includes(search.toLowerCase()),
+    `${d.subject} ${d.order.order_number}`
+      .toLowerCase()
+      .includes(search.toLowerCase()),
   );
 
   const handleAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,9 +110,15 @@ export default function Disputes() {
     if (!selectedId || (!draft.trim() && attachments.length === 0)) return;
     setSending(true);
     try {
-      const message = await sendDisputeMessage(selectedId, draft.trim(), attachments);
+      const message = await sendDisputeMessage(
+        selectedId,
+        draft.trim(),
+        attachments,
+      );
       setSelected((prev) =>
-        prev ? { ...prev, messages: [...(prev.messages ?? []), message] } : prev,
+        prev
+          ? { ...prev, messages: [...(prev.messages ?? []), message] }
+          : prev,
       );
       setDraft("");
       setAttachments([]);
@@ -103,16 +129,48 @@ export default function Disputes() {
     }
   };
 
-  const handleCreateDispute = async ()=>{
-    
-  }
+  const handleCreateDispute = async () => {
+    try {
+      const orderId =
+        newDispute.order_id || selected?.order.id || disputes[0]?.order.id;
+      if (!orderId) {
+        setError("Select an order to open a dispute.");
+        return;
+      }
 
-  const canReply = selected?.status !== "resolved" && selected?.status !== "closed";
+      const disputePayload: CreateDisputePayload = {
+        order_id: orderId,
+        subject: newDispute.subject.trim(),
+        message: newDispute.message.trim(),
+        ...(newDispute.attachments.length > 0
+          ? { attachments: newDispute.attachments }
+          : {}),
+      };
+
+      const response = await createDispute(disputePayload);
+      setDisputes((prev) => [response, ...prev]);
+      setSelectedId(response.id);
+      setNewDispute({
+        order_id: orderId,
+        subject: "",
+        message: "",
+        attachments: [],
+      });
+      setDraft("");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  };
+
+  const canReply =
+    selected?.status !== "resolved" && selected?.status !== "closed";
 
   return (
     <BuyerLayout breadcrumb="Disputes / My Disputes" cartCount={count}>
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-primary">{error}</div>
+        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-primary">
+          {error}
+        </div>
       )}
       <div className="grid gap-6 pb-10 lg:grid-cols-[340px_1fr] h-full">
         <div className="rounded-4xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -122,20 +180,32 @@ export default function Disputes() {
             placeholder="Search disputes..."
             className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
           />
-            <button className={`flex w-full justify-center items-center gap-3 rounded-2xl p-2 mt-4 text-center text-white  bg-primary hover:bg-slate-50 hover:text-primary border border-primary`}> <Plus style={{}} 
-            /> Create New Dispute </button>
+          <button
+            onClick={handleCreateDispute}
+            className={`flex w-full justify-center items-center gap-3 rounded-2xl p-2 mt-4 text-center text-white  bg-primary hover:bg-slate-50 hover:text-primary border border-primary`}
+          >
+            {" "}
+            <Plus style={{}} />
+            Create New Dispute{" "}
+          </button>
 
           <div className="mt-4 space-y-1 ">
-            {loading && <p className="p-3 text-sm text-slate-400">Loading disputes...</p>}
+            {loading && (
+              <p className="p-3 text-sm text-slate-400">Loading disputes...</p>
+            )}
             {!loading && filtered.length === 0 && (
-              <p className="p-3 text-sm text-center text-slate-400">No disputes yet.</p>
+              <p className="p-3 text-sm text-center text-slate-400">
+                No disputes yet.
+              </p>
             )}
             {filtered.map((dispute) => (
               <button
                 key={dispute.id}
                 onClick={() => setSelectedId(dispute.id)}
                 className={`flex w-full items-start gap-3 rounded-2xl p-3 text-left ${
-                  dispute.id === selectedId ? "bg-global-bg" : "hover:bg-slate-50"
+                  dispute.id === selectedId
+                    ? "bg-global-bg"
+                    : "hover:bg-slate-50"
                 }`}
               >
                 <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
@@ -150,7 +220,9 @@ export default function Disputes() {
                       {formatDate(dispute.created_at)}
                     </span>
                   </div>
-                  <p className="truncate text-xs text-slate-500">{dispute.subject}</p>
+                  <p className="truncate text-xs text-slate-500">
+                    {dispute.subject}
+                  </p>
                   {dispute.last_message && (
                     <p className="mt-1 truncate text-xs text-slate-400">
                       {dispute.last_message.message}
@@ -169,7 +241,9 @@ export default function Disputes() {
         <div className="flex flex-col rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
           {!selected && (
             <p className="m-auto text-sm text-slate-400">
-              {detailLoading ? "Loading..." : "Select a dispute to view the conversation."}
+              {detailLoading
+                ? "Loading..."
+                : "Select a dispute to view the conversation."}
             </p>
           )}
 
@@ -177,7 +251,9 @@ export default function Disputes() {
             <>
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
-                  <p className="font-medium text-slate-900">{selected.order.order_number}</p>
+                  <p className="font-medium text-slate-900">
+                    {selected.order.order_number}
+                  </p>
                   <p className="text-xs text-slate-400">{selected.subject}</p>
                 </div>
                 <StatusBadge status={selected.workflow_status} />
@@ -188,7 +264,9 @@ export default function Disputes() {
                   <div
                     key={message.id}
                     className={`flex ${
-                      message.sender.role === "user" ? "justify-end" : "justify-start"
+                      message.sender.role === "user"
+                        ? "justify-end"
+                        : "justify-start"
                     }`}
                   >
                     <div
@@ -200,13 +278,18 @@ export default function Disputes() {
                     >
                       <p>{message.message}</p>
                       {message.attachments?.map((att) => (
-                        <p key={att.id} className="mt-1 text-xs underline opacity-80">
+                        <p
+                          key={att.id}
+                          className="mt-1 text-xs underline opacity-80"
+                        >
                           {att.original_name}
                         </p>
                       ))}
                       <p
                         className={`mt-1 text-xs ${
-                          message.sender.role === "user" ? "text-white/70" : "text-slate-400"
+                          message.sender.role === "user"
+                            ? "text-white/70"
+                            : "text-slate-400"
                         }`}
                       >
                         {formatTime(message.created_at)}
@@ -263,7 +346,8 @@ export default function Disputes() {
                 </div>
               ) : (
                 <p className="border-t border-slate-100 pt-4 text-center text-xs text-slate-400">
-                  This dispute is {selected.status} — no further messages can be sent.
+                  This dispute is {selected.status} — no further messages can be
+                  sent.
                 </p>
               )}
             </>

@@ -47,9 +47,9 @@ export default function Checkout() {
     try {
       const orderDetails: CreateOrderPayload = {
         // items: items,
-        items: items.map((item)=>({
-listing_id: item.listing_id,
-quantity: item.quantity,
+        items: items.map((item) => ({
+          listing_id: item.listing_id,
+          quantity: item.quantity,
         })),
         delivery_method: form.delivery_method,
         delivery_name: form.delivery_name,
@@ -60,7 +60,7 @@ quantity: item.quantity,
         delivery_notes: form.delivery_notes,
       };
       await createOrder(orderDetails);
-      console.log(orderDetails)
+      console.log(orderDetails);
       return true;
     } catch (err) {
       setError(getErrorMessage(err));

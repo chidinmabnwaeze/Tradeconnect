@@ -5,6 +5,7 @@ import {
   MapPin,
   PackageCheck,
   PackagePlus,
+  Plus,
   Truck,
 } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
@@ -14,6 +15,8 @@ import { formatNaira } from "../lib/format";
 import { getMyOrders } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { type Order } from "../lib/types/order";
+import { useNavigate } from "react-router-dom";
+import { createDispute } from "../lib/services/disputes.service";
 
 const steps = [
   { label: "Order Created", icon: PackagePlus },
@@ -33,7 +36,9 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selected, setSelected] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dispute, setDispute] = useState("")
   const { count } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -49,6 +54,27 @@ export default function Orders() {
     };
     fetchOrders();
   }, []);
+
+//   const createOrderDispute = async (order_id: number) => {
+
+// const orderId = selected?.id
+
+// const orderData = {
+//    order_id: selected?.id,
+//   order_item_id?: selected?.order_number
+//   // subject: selected.
+//   // message: string;
+//   // attachments?: File[];
+// }
+// try{
+// const response = await createDispute(orderData)
+// }catch(){
+
+// }
+
+//     navigate("/disputes");
+//     return createDispute(orderId);
+//   };
 
   const activeStep =
     selected?.status === "new"
@@ -136,9 +162,19 @@ export default function Orders() {
                     })}
                   </p>
                 </div>
-                <p className="text-lg font-bold text-slate-900">
-                  {formatNaira(Number(selected.total))}
-                </p>
+                <div>
+                  <button
+                    // onClick={createDispute(selected.id)}
+                    className={`flex w-full justify-center items-center gap-3 rounded-2xl p-2 mt-4 text-center text-white  bg-primary hover:bg-slate-50 hover:text-primary border border-primary`}
+                  >
+                    {" "}
+                    <Plus style={{}} />
+                    Create New Dispute{" "}
+                  </button>
+                  <p className="text-lg font-bold text-slate-900">
+                    {formatNaira(Number(selected.total))}
+                  </p>
+                </div>
               </div>
 
               <div className="mt-8 flex items-center justify-between px-2">
