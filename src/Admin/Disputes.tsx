@@ -194,7 +194,7 @@ export default function Disputes() {
                   </p>
                   {dispute.last_message && (
                     <p className="mt-1 truncate text-xs text-slate-500">
-                      {dispute.last_message.message}
+                      {dispute.last_message.body}
                     </p>
                   )}
                 </div>
@@ -267,7 +267,7 @@ export default function Disputes() {
                           : "bg-slate-100 text-slate-700"
                       }`}
                     >
-                      <p>{message.message}</p>
+                      <p>{message.body}</p>
                       {message.attachments?.map((att) => (
                         <p key={att.id} className="mt-1 text-xs underline opacity-80">
                           {att.original_name}

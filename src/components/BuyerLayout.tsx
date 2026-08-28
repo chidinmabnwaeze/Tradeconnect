@@ -9,6 +9,9 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Avatar from "./Avatar";
+import { useEffect, useState } from "react";
+import { getCurrentUser } from "../lib/services/auth.service";
+import { getErrorMessage } from "../lib/getErrorMessage";
 
 interface NavItem {
   label: string;
@@ -34,6 +37,19 @@ export default function BuyerLayout({
   onCartClick?: () => void;
 }) {
   const location = useLocation();
+  const [buyer, setBuyer] = useState("");
+
+  useEffect(() => {
+    const getBuyer = async () => {
+      try {
+        const response = await getCurrentUser();
+        setBuyer(response);
+      } catch (err) {
+        getErrorMessage(err);
+      }
+    };
+    getBuyer();
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-global-bg gap-4 p-4">
@@ -116,10 +132,10 @@ export default function BuyerLayout({
               <Bell className="h-4 w-4" />
             </button>
             <div className="flex items-center gap-3">
-              <Avatar name="Joy Smith" />
+              <Avatar name={buyer.name ?? ""} />
               <div className="text-sm">
-                <p className="font-medium text-slate-900">Joy Smith</p>
-                <p className="text-xs text-slate-400">BYR-01203</p>
+                <p className="font-medium text-slate-900">{buyer.name}</p>
+                <p className="text-xs text-slate-400">{buyer.account_code}</p>
               </div>
             </div>
           </div>

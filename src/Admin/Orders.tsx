@@ -16,7 +16,6 @@ import { type Order } from "../lib/types/order";
 import { getAllOrders, getOrder } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 
-
 // const orders: Order[] = [
 //   { id: "#ORD-1285", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Rice", emoji: "🌾", category: "Grains & Cereals", price: "₦1000/kg", qty: "5kg", total: "₦1000", status: "New" },
 //   { id: "#ORD-1286", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Spinach", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "In Transit" },
@@ -29,17 +28,19 @@ import { getErrorMessage } from "../lib/getErrorMessage";
 //   { id: "#ORD-1293", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Lettuce", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "New" },
 // ];
 
-
-
 export default function Orders() {
   const [page, setPage] = useState(1);
   const [orders, setOrders] = useState<Order[]>([]);
   const [selected, setSelected] = useState<Order | null>(orders[0] ?? null);
   const PAGE_SIZE = 10;
   const pageCount = Math.ceil(orders.length / PAGE_SIZE) || 1;
-  
+
   const steps = [
-    { label: "Order Created", date: selected?.created_at?.split('T')[0], icon: PackagePlus },
+    {
+      label: "Order Created",
+      date: selected?.created_at?.split("T")[0],
+      icon: PackagePlus,
+    },
     { label: "Order Confirmed", date: "26 Jul 2026", icon: CircleCheck },
     { label: "Processing", date: "26 Jul 2026", icon: Clock },
     { label: "Out for Delivery", date: "28 Jul 2026", icon: Truck },
@@ -73,7 +74,7 @@ export default function Orders() {
         const response = await getOrder(id);
         id = response.id;
         setSelected(response);
-        console.log("single order item", response)
+        console.log("single order item", response);
       };
       getOrderItem(selected?.id ?? 0);
     } catch (error) {
@@ -245,7 +246,9 @@ export default function Orders() {
                   </div>
                 </td>
                 <td className="py-3 text-slate-600">{order.buyer?.name}</td>
-                <td className="py-3 text-slate-600">{order.quantity} {order.items?.[0]?.unit}</td>
+                <td className="py-3 text-slate-600">
+                  {order.quantity} {order.items?.[0]?.unit}
+                </td>
                 <td className="py-3 text-slate-600">{order.total}</td>
                 <td className="py-3">
                   <StatusBadge status={order.status} />

@@ -8,7 +8,7 @@ import { getErrorMessage } from "../lib/getErrorMessage";
 import type { Category } from "../lib/types/category";
 import { getActiveListings } from "../lib/services/listings.service";
 import { type Listing } from "../lib/types/listing";
-import { getPublicCategories } from "../lib/services/categories.service";
+import { getCategories, getPublicCategories } from "../lib/services/categories.service";
 import { toast, ToastContainer } from "react-toastify";
 
 const ALL_PRODUCE = "All Produce";
@@ -36,6 +36,7 @@ export const Marketplace = () => {
   // deployed on this backend) — falls back to categories derived from the
   // loaded listings below.
   const [apiCategories, setApiCategories] = useState<Category[] | null>(null);
+  const [allCategories, setAllCategories]= useState()
   const { addItem, count } = useCart();
   const [loading, setLoading] = useState(true);
 
@@ -55,7 +56,7 @@ export const Marketplace = () => {
     return Array.from(byId.values());
   }, [listings]);
 
-  const categories = apiCategories ?? derivedCategories;
+  const categories = allCategories ?? derivedCategories;
 
   const filtered = useMemo(
     () =>
@@ -82,8 +83,9 @@ export const Marketplace = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await getPublicCategories();
-        setApiCategories(response);
+        const response = await getCategories();
+        setAllCategories(response);
+        console.log("categories", response)
       } catch (error) {
         // /categories isn't deployed on every backend yet — fall back to
         // categories derived from listings instead of leaving the strip empty.

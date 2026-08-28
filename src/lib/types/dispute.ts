@@ -22,10 +22,12 @@ export interface DisputeAttachment {
   created_at: string;
 }
 
+// Confirmed against a real API response — the message text field is `body`,
+// not `message` (the `message` field only exists on the *request* payload).
 export interface DisputeMessage {
   id: number;
   dispute_id: number;
-  message: string;
+  body: string;
   sender: DisputeSender;
   attachments?: DisputeAttachment[];
   created_at: string;
@@ -38,25 +40,62 @@ export interface DisputeBuyer {
   email: string;
 }
 
-export interface DisputeFarmer {
+// Admin actor summary — matches the shape used for `buyer`/`released_by`
+// elsewhere in the API (payout resource, etc.).
+export interface DisputeAdminActor {
+  id: number;
+  account_code: string;
+  name: string;
+  email: string;
+}
+
+export interface DisputeFarmerSummary {
   id: number;
   name: string;
-  farmer_code: string;
+  state: string;
+  lga: string;
+  phone_number: string;
+}
+
+export interface DisputeProduceSummary {
+  id: number;
+  name: string;
+  image_url: string;
+  category: { id: number; name: string };
 }
 
 export interface DisputeOrderItem {
   id: number;
+  listing_id: number;
+  farmer_id: number;
+  produce_id: number;
   produce_name: string;
+  category_name: string;
+  unit: string | null;
   quantity: number;
-  unit: string;
+  unit_price: string;
+  discount_amount: string;
   line_total: string;
+  produce: DisputeProduceSummary;
+  farmer: DisputeFarmerSummary;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface DisputeOrderSummary {
   id: number;
   order_number: string;
+  quantity: number;
   total: string;
   status: string;
+  payment_status: string;
+  items: DisputeOrderItem[];
+  // Legacy single-produce compatibility field, same as on the Order resource.
+  produce: {
+    id: number;
+    name: string;
+    image_url: string;
+  };
 }
 
 export interface Dispute {
@@ -69,17 +108,20 @@ export interface Dispute {
   workflow_status: DisputeWorkflowStatus;
   unread_count: number;
   is_unread: boolean;
+  messages_count: number;
   buyer: DisputeBuyer;
-  affected_farmer?: DisputeFarmer | null;
+  affected_farmer?: DisputeFarmerSummary | null;
   affected_item?: DisputeOrderItem | null;
   order: DisputeOrderSummary;
   // Full thread — present on "get one" responses; list responses omit this
-  // in favor of a compact last-message projection.
+  // in favor of the compact `last_message` projection.
   messages?: DisputeMessage[];
-  last_message?: Pick<DisputeMessage, "message" | "created_at"> | null;
+  last_message?: DisputeMessage | null;
   under_review_at: string | null;
   resolved_at: string | null;
+  resolved_by: DisputeAdminActor | null;
   closed_at: string | null;
+  closed_by: DisputeAdminActor | null;
   resolution_note: string | null;
   created_at: string;
   updated_at: string;

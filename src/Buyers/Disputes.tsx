@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Paperclip, Send, Plus } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { Paperclip, Send, Plus, X } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
 import StatusBadge from "../components/StatusBadge";
 import { useCart } from "./CartContext";
@@ -11,7 +12,14 @@ import {
   markMyDisputeRead,
   sendDisputeMessage,
 } from "../lib/services/disputes.service";
+import { getMyOrders } from "../lib/services/orders.service";
+import type { Order } from "../lib/types/order";
 import { getErrorMessage } from "../lib/getErrorMessage";
+
+interface DisputeNavState {
+  orderId?: number;
+  orderNumber?: string;
+}
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("en-US", {
@@ -27,6 +35,9 @@ const formatTime = (value: string) =>
 
 export default function Disputes() {
   const { count } = useCart();
+  const location = useLocation();
+  const navState = location.state as DisputeNavState | null;
+
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +51,24 @@ export default function Disputes() {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Compose panel — opened either from the sidebar button (pick an order) or
+  // by navigating here from an order's "Open New Dispute" button (order is
+  // already fixed).
+  const [composing, setComposing] = useState(Boolean(navState?.orderId));
+  const [creating, setCreating] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [newDispute, setNewDispute] = useState({
-    order_id: 0,
-    // order_item_id?: ,
+    order_id: navState?.orderId ?? 0,
+    order_number: navState?.orderNumber ?? "",
     subject: "",
     message: "",
     attachments: [] as File[],
   });
+  const composeFileInputRef = useRef<HTMLInputElement>(null);
+  // Set right after creating a dispute so the [selectedId] effect below
+  // doesn't immediately overwrite our locally-seeded thread with a re-fetch.
+  const skipNextDetailFetchRef = useRef<number | null>(null);
 
   useEffect(() => {
     const fetchDisputes = async () => {
@@ -54,7 +76,7 @@ export default function Disputes() {
       try {
         const response = await getMyDisputes({ per_page: 100 });
         setDisputes(response.data);
-        if (response.data.length > 0) {
+        if (response.data.length > 0 && !composing) {
           setSelectedId(response.data[0].id);
         }
       } catch (err) {
@@ -67,8 +89,27 @@ export default function Disputes() {
   }, []);
 
   useEffect(() => {
+    // Only needed to populate the order picker when composing without a
+    // pre-selected order (i.e. not arriving from an order's dispute button).
+    if (navState?.orderId) return;
+    const fetchOrders = async () => {
+      try {
+        const response = await getMyOrders({ per_page: 100 });
+        setOrders(response.data);
+      } catch (err) {
+        setError(getErrorMessage(err));
+      }
+    };
+    fetchOrders();
+  }, []);
+
+  useEffect(() => {
     if (selectedId === null) {
       setSelected(null);
+      return;
+    }
+    if (skipNextDetailFetchRef.current === selectedId) {
+      skipNextDetailFetchRef.current = null;
       return;
     }
     const fetchDetail = async () => {
@@ -129,17 +170,22 @@ export default function Disputes() {
     }
   };
 
-  const handleCreateDispute = async () => {
-    try {
-      const orderId =
-        newDispute.order_id || selected?.order.id || disputes[0]?.order.id;
-      if (!orderId) {
-        setError("Select an order to open a dispute.");
-        return;
-      }
+  const canSubmitNewDispute =
+    newDispute.order_id > 0 &&
+    newDispute.subject.trim().length > 0 &&
+    newDispute.message.trim().length > 0;
 
+  const handleCreateDispute = async () => {
+    if (!canSubmitNewDispute) {
+      setError("Pick an order and fill in a subject and message.");
+      return;
+    }
+
+    setCreating(true);
+    setError(null);
+    try {
       const disputePayload: CreateDisputePayload = {
-        order_id: orderId,
+        order_id: newDispute.order_id,
         subject: newDispute.subject.trim(),
         message: newDispute.message.trim(),
         ...(newDispute.attachments.length > 0
@@ -148,18 +194,34 @@ export default function Disputes() {
       };
 
       const response = await createDispute(disputePayload);
+
+      // createDispute already returns the full Dispute with messages[]
+      // populated, so use it directly and skip the redundant detail re-fetch.
       setDisputes((prev) => [response, ...prev]);
+      skipNextDetailFetchRef.current = response.id;
+      setSelected(response);
       setSelectedId(response.id);
+      setComposing(false);
       setNewDispute({
-        order_id: orderId,
+        order_id: 0,
+        order_number: "",
         subject: "",
         message: "",
         attachments: [],
       });
-      setDraft("");
     } catch (err) {
       setError(getErrorMessage(err));
+    } finally {
+      setCreating(false);
     }
+  };
+
+  const handleComposeAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewDispute((prev) => ({
+      ...prev,
+      attachments: [...prev.attachments, ...Array.from(e.target.files ?? [])],
+    }));
+    e.target.value = "";
   };
 
   const canReply =
@@ -181,7 +243,16 @@ export default function Disputes() {
             className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
           />
           <button
-            onClick={handleCreateDispute}
+            onClick={() => {
+              setNewDispute({
+                order_id: 0,
+                order_number: "",
+                subject: "",
+                message: "",
+                attachments: [],
+              });
+              setComposing(true);
+            }}
             className={`flex w-full justify-center items-center gap-3 rounded-2xl p-2 mt-4 text-center text-white  bg-primary hover:bg-slate-50 hover:text-primary border border-primary`}
           >
             {" "}
@@ -201,9 +272,12 @@ export default function Disputes() {
             {filtered.map((dispute) => (
               <button
                 key={dispute.id}
-                onClick={() => setSelectedId(dispute.id)}
+                onClick={() => {
+                  setComposing(false);
+                  setSelectedId(dispute.id);
+                }}
                 className={`flex w-full items-start gap-3 rounded-2xl p-3 text-left ${
-                  dispute.id === selectedId
+                  !composing && dispute.id === selectedId
                     ? "bg-global-bg"
                     : "hover:bg-slate-50"
                 }`}
@@ -225,7 +299,7 @@ export default function Disputes() {
                   </p>
                   {dispute.last_message && (
                     <p className="mt-1 truncate text-xs text-slate-400">
-                      {dispute.last_message.message}
+                      {dispute.last_message.body}
                     </p>
                   )}
                 </div>
@@ -239,7 +313,128 @@ export default function Disputes() {
         </div>
 
         <div className="flex flex-col rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
-          {!selected && (
+          {composing && (
+            <>
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h2 className="font-medium text-slate-900">New Dispute</h2>
+                <button
+                  onClick={() => setComposing(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 space-y-4 overflow-y-auto py-6">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                    Order
+                  </label>
+                  {navState?.orderId ? (
+                    <p className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700">
+                      {newDispute.order_number || navState.orderNumber}
+                    </p>
+                  ) : (
+                    <select
+                      value={newDispute.order_id}
+                      onChange={(e) => {
+                        const orderId = Number(e.target.value);
+                        const order = orders.find((o) => o.id === orderId);
+                        setNewDispute((prev) => ({
+                          ...prev,
+                          order_id: orderId,
+                          order_number: order?.order_number ?? "",
+                        }));
+                      }}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
+                    >
+                      <option value={0}>Select an order</option>
+                      {orders.map((order) => (
+                        <option key={order.id} value={order.id}>
+                          {order.order_number}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                    Subject
+                  </label>
+                  <input
+                    value={newDispute.subject}
+                    onChange={(e) =>
+                      setNewDispute((prev) => ({
+                        ...prev,
+                        subject: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. Wrong quantity delivered"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                    Message
+                  </label>
+                  <textarea
+                    value={newDispute.message}
+                    onChange={(e) =>
+                      setNewDispute((prev) => ({
+                        ...prev,
+                        message: e.target.value,
+                      }))
+                    }
+                    rows={5}
+                    placeholder="Describe the issue with this order..."
+                    className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
+                  />
+                </div>
+
+                {newDispute.attachments.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {newDispute.attachments.map((file, idx) => (
+                      <span
+                        key={idx}
+                        className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600"
+                      >
+                        {file.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 border-t border-slate-100 pt-4">
+                <input
+                  ref={composeFileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  onChange={handleComposeAttach}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => composeFileInputRef.current?.click()}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={handleCreateDispute}
+                  disabled={!canSubmitNewDispute || creating}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {creating ? "Sending..." : "Send Dispute"}
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+            </>
+          )}
+
+          {!composing && !selected && (
             <p className="m-auto text-sm text-slate-400">
               {detailLoading
                 ? "Loading..."
@@ -247,7 +442,7 @@ export default function Disputes() {
             </p>
           )}
 
-          {selected && (
+          {!composing && selected && (
             <>
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
@@ -276,7 +471,7 @@ export default function Disputes() {
                           : "bg-slate-100 text-slate-700"
                       }`}
                     >
-                      <p>{message.message}</p>
+                      <p>{message.body}</p>
                       {message.attachments?.map((att) => (
                         <p
                           key={att.id}
