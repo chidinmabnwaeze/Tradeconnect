@@ -35,16 +35,37 @@ export default function Orders() {
   const PAGE_SIZE = 10;
   const pageCount = Math.ceil(orders.length / PAGE_SIZE) || 1;
 
+  const formatDate = (date: string | null) => {
+    const changeDate = date?.split("T")[0];
+    return changeDate;
+  };
+
   const steps = [
     {
       label: "Order Created",
-      date: selected?.created_at?.split("T")[0],
+      date: formatDate(selected?.created_at ?? "-"),
       icon: PackagePlus,
     },
-    { label: "Order Confirmed", date: "26 Jul 2026", icon: CircleCheck },
-    { label: "Processing", date: "26 Jul 2026", icon: Clock },
-    { label: "Out for Delivery", date: "28 Jul 2026", icon: Truck },
-    { label: "Delivered", date: "29 Jul 2026", icon: PackageCheck },
+    {
+      label: "Order Confirmed",
+      date: formatDate(selected?.placed_at ?? "-"),
+      icon: CircleCheck,
+    },
+    {
+      label: "Processing",
+      date: formatDate(selected?.confirmed_at ?? "-"),
+      icon: Clock,
+    },
+    {
+      label: "Out for Delivery",
+      date: formatDate(selected?.out_for_delivery_at ?? "-"),
+      icon: Truck,
+    },
+    {
+      label: "Delivered",
+      date: formatDate(selected?.delivered_at ?? "-"),
+      icon: PackageCheck,
+    },
   ];
 
   const activeStep =
@@ -57,29 +78,32 @@ export default function Orders() {
           : 0;
 
   useEffect(() => {
-    try {
-      const getOrders = async () => {
+    const getOrders = async () => {
+      try {
         const response = await getAllOrders({ page });
         setOrders(response.data);
-      };
-      getOrders();
-    } catch (error) {
-      getErrorMessage(error);
-    }
+        if (response.data.length > 0) {
+          setSelected(response.data[0]);
+        }
+      } catch (error) {
+        getErrorMessage(error);
+      }
+    };
+    getOrders();
   }, [page]);
 
   useEffect(() => {
-    try {
-      const getOrderItem = async (id: number) => {
+    const getOrderItem = async (id: number) => {
+      try {
         const response = await getOrder(id);
         id = response.id;
         setSelected(response);
         console.log("single order item", response);
-      };
-      getOrderItem(selected?.id ?? 0);
-    } catch (error) {
-      getErrorMessage(error);
-    }
+      } catch (error) {
+        getErrorMessage(error);
+      }
+      getOrderItem(selected?.id ?? 1);
+    };
   }, []);
 
   return (
@@ -225,8 +249,12 @@ export default function Orders() {
                 }`}
               >
                 <td className="py-3">
-                  <p className="font-medium text-slate-900">{order.id}</p>
-                  <p className="text-xs text-slate-400">{order.placed_at}</p>
+                  <p className="font-medium text-slate-900">
+                    {order.order_number}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {formatDate(`${order.placed_at}`)}
+                  </p>
                 </td>
                 <td className="py-3">
                   <div className="flex items-center gap-3">
@@ -245,7 +273,16 @@ export default function Orders() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 text-slate-600">{order.buyer?.name}</td>
+                <td className="py-3 ">
+                  <div>
+                    <p className="font-medium text-slate-600">
+                      {order.buyer_name}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {order.buyer?.email}
+                    </p>
+                  </div>
+                </td>
                 <td className="py-3 text-slate-600">
                   {order.quantity} {order.items?.[0]?.unit}
                 </td>

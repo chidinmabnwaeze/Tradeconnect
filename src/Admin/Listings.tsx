@@ -58,7 +58,7 @@ export default function Listings() {
             </button>
             <button
               onClick={() => navigate("/add-listing")}
-              className="flex items-center gap-2 rounded-lg bg-[#C4773B] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95"
             >
               <Plus className="h-4 w-4" />
               Add Listing

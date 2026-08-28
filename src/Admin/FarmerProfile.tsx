@@ -15,36 +15,10 @@ import StatusBadge from "../components/StatusBadge";
 import { getFarmer } from "../lib/services/farmers.service";
 import { type Farmer } from "../lib/types/farmer";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { formatDate } from "../lib/format";
 
 const tabs = ["Overview", "Listings", "Orders", "Activity Log"] as const;
 type Tab = (typeof tabs)[number];
-
-const farmerOrders = [
-  {
-    order: "#1284",
-    item: "Big Tomatoes",
-    buyer: "Ade Coker",
-    amount: "₦12,000",
-    status: "Confirmed",
-    date: "21 Jan 2025",
-  },
-  {
-    order: "#1154",
-    item: "Cassava",
-    buyer: "Halima Musa",
-    amount: "₦8,500",
-    status: "In Transit",
-    date: "18 Jan 2025",
-  },
-  {
-    order: "#1098",
-    item: "Yam",
-    buyer: "Emeka Obi",
-    amount: "₦22,000",
-    status: "Delivered",
-    date: "10 Jan 2025",
-  },
-];
 
 const activityLog = [
   {
@@ -96,8 +70,6 @@ export default function FarmerProfile() {
     };
     handleFarmerProfile(farmerId);
   }, [farmerId]);
-
-  
 
   return (
     <Layout
@@ -200,7 +172,7 @@ export default function FarmerProfile() {
         <div className="mt-6">
           {activeTab === "Overview" && <OverviewTab farmer={farmer} />}
           {activeTab === "Listings" && <ListingsTab farmer={farmer} />}
-          {activeTab === "Orders" && <OrdersTab />}
+          {activeTab === "Orders" && <OrdersTab farmer={farmer} />}
           {activeTab === "Activity Log" && <ActivityLogTab />}
         </div>
       </div>
@@ -387,7 +359,7 @@ function ListingsTab({ farmer }: { farmer: Farmer | null }) {
   );
 }
 
-function OrdersTab() {
+function OrdersTab({ farmer }: { farmer: Farmer | null }) {
   return (
     <table className="w-full text-left text-sm">
       <thead>
@@ -400,17 +372,19 @@ function OrdersTab() {
         </tr>
       </thead>
       <tbody>
-        {farmerOrders.map((order, idx) => (
+        {farmer?.recent_orders?.map((order, idx) => (
           <tr key={idx} className="border-t border-slate-100">
             <td className="py-3">
-              <p className="font-medium text-slate-900">{order.order}</p>
-              <p className="text-xs text-slate-400">{order.item}</p>
+              <p className="font-medium text-slate-900">{order.order_number}</p>
+              <p className="text-xs text-slate-400">{order.produce?.name}</p>
             </td>
-            <td className="py-3 text-slate-600">{order.buyer}</td>
-            <td className="py-3 font-medium text-slate-900">{order.amount}</td>
-            <td className="py-3 text-slate-500">{order.date}</td>
+            <td className="py-3 text-slate-600">{order.buyer?.name}</td>
+            <td className="py-3 font-medium text-slate-900">{order.total}</td>
+            <td className="py-3 text-slate-500">
+              {formatDate(order.placed_at)}
+            </td>
             <td className="py-3">
-              <StatusBadge status={order.status} />
+              <StatusBadge status={order.payment_status} />
             </td>
           </tr>
         ))}

@@ -12,6 +12,7 @@ import Avatar from "./Avatar";
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "../lib/services/auth.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import type { AuthUser } from "../lib/types/auth";
 
 interface NavItem {
   label: string;
@@ -37,7 +38,7 @@ export default function BuyerLayout({
   onCartClick?: () => void;
 }) {
   const location = useLocation();
-  const [buyer, setBuyer] = useState("");
+  const [buyer, setBuyer] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     const getBuyer = async () => {

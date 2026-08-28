@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Bell,
@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import Avatar from "./Avatar";
 import Logout from "./Logout";
+import { getCurrentUser } from "../lib/services/auth.service";
+import { getErrorMessage } from "../lib/getErrorMessage";
+import type { AuthUser } from "../lib/types/auth";
 
 interface NavItem {
   label: string;
@@ -59,13 +62,25 @@ export default function Layout({
   const usersSectionActive =
     location.pathname.startsWith("/users") || location.pathname === "/buyers";
   const [usersOpen, setUsersOpen] = useState(usersSectionActive);
-
+  const [user, setUser] = useState<AuthUser | null>(null);
   const getCurrentDate = () => {
     const date = Intl.DateTimeFormat("en-US", { dateStyle: "full" }).format(
       new Date(),
     );
     return date;
   };
+
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const response = await getCurrentUser();
+        setUser(response);
+      } catch (error) {
+        getErrorMessage(error);
+      }
+    };
+    getUser();
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-global-bg gap-4 p-4">
@@ -175,10 +190,10 @@ export default function Layout({
                 <Bell className="h-4 w-4" />
               </button>
               <div className="flex items-center gap-3">
-                <Avatar name="Marsai Smith" />
+                <Avatar name={user?.name ?? ""} />
                 <div className="text-sm">
-                  <p className="font-medium text-slate-900">Marsai Smith</p>
-                  <p className="text-xs text-slate-400">ADM 001</p>
+                  <p className="font-medium text-slate-900">{user?.name}</p>
+                  <p className="text-xs text-slate-400">{user?.account_code}</p>
                 </div>
               </div>
             </div>

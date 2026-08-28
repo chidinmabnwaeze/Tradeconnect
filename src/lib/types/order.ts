@@ -77,9 +77,14 @@ export interface Order {
   // Loaded on the order-detail route only.
   timeline?: OrderTimelineEvent[];
   placed_at: string;
-  deliver_by: string | null;
   created_at: string;
   updated_at: string;
+  confirmed_at: string;
+  processing_at: string;
+  out_for_delivery_at: string;
+  deliver_by: string | null;
+  delivered_at: string;
+  cancelled_at: string;
 }
 
 export interface CreateOrderItemPayload {
