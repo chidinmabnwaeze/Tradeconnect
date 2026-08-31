@@ -133,10 +133,10 @@ export default function BuyerLayout({
               <Bell className="h-4 w-4" />
             </button>
             <div className="flex items-center gap-3">
-              <Avatar name={buyer.name ?? ""} />
+              <Avatar name={buyer?.name ?? ""} />
               <div className="text-sm">
-                <p className="font-medium text-slate-900">{buyer.name}</p>
-                <p className="text-xs text-slate-400">{buyer.account_code}</p>
+                <p className="font-medium text-slate-900">{buyer?.name}</p>
+                <p className="text-xs text-slate-400">{buyer?.account_code}</p>
               </div>
             </div>
           </div>

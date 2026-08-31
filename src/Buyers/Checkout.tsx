@@ -5,14 +5,18 @@ import BuyerLayout from "../components/BuyerLayout";
 import OrderSummaryModal from "./OrderSummaryModal";
 import { useCart } from "./CartContext";
 import { formatNaira } from "../lib/format";
-import { createOrder } from "../lib/services/orders.service";
+import {
+  createOrder,
+  initializeOrderPayment,
+  verifyOrderPayment,
+} from "../lib/services/orders.service";
 import type {
   CreateOrderPayload,
-  // CreateOrderItemPayload,
   DeliveryMethod,
 } from "../lib/types/order";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { lgasByState, nigerianStates } from "../lib/data/nigeria-lgas";
+import Paystack from "@paystack/inline-js";
 
 export default function Checkout() {
   const { items, count, clear } = useCart();
@@ -31,7 +35,6 @@ export default function Checkout() {
     delivery_address: "",
     delivery_notes: "",
   });
-
   const handleSubmitForm = async () => {
     if (
       !form.delivery_address ||
@@ -59,12 +62,10 @@ export default function Checkout() {
         delivery_address: form.delivery_address,
         delivery_notes: form.delivery_notes,
       };
-      await createOrder(orderDetails);
-      console.log(orderDetails);
-      return true;
+      const order = await createOrder(orderDetails);
+      return order;
     } catch (err) {
       setError(getErrorMessage(err));
-      console.log(setError(getErrorMessage(err)));
       return false;
     }
   };
@@ -79,14 +80,41 @@ export default function Checkout() {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   const handlePay = async () => {
-    const success = await handleSubmitForm();
+    try {
+      setError("");
+      const order = await handleSubmitForm();
+      if (!order) return;
+console.log(order)
+      const payment = await initializeOrderPayment(order.id);
 
-    if (!success) {
-      return;
+      const paystack = new Paystack();
+      paystack.resumeTransaction(payment.access_code, {
+        onSuccess: async () => {
+          try {
+            const verification = await verifyOrderPayment(order.id);
+            if (verification.payment_status !== "paid") {
+              setError(
+                "We couldn't confirm your payment. Check My Orders shortly, or contact support if you were charged.",
+              );
+              return;
+            }
+            clear();
+            setSummaryOpen(false);
+            navigate("/marketplace/orders");
+          } catch (err) {
+            setError(getErrorMessage(err));
+          }
+        },
+        onCancel: () => {
+          setError("Payment was cancelled.");
+        },
+        onError: (err: { message: string }) => {
+          setError(err?.message || "Payment failed. Please try again.");
+        },
+      });
+    } catch (error) {
+      setError(getErrorMessage(error));
     }
-    clear();
-    setSummaryOpen(false);
-    navigate("/marketplace/orders");
   };
 
   return (
