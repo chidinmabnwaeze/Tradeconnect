@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { Paperclip, Send, Plus, X } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
 import StatusBadge from "../components/StatusBadge";
-import { useCart } from "./CartContext";
 import type { CreateDisputePayload, Dispute } from "../lib/types/dispute";
 import {
   createDispute,
@@ -34,7 +33,6 @@ const formatTime = (value: string) =>
   });
 
 export default function Disputes() {
-  const { count } = useCart();
   const location = useLocation();
   const navState = location.state as DisputeNavState | null;
 
@@ -228,7 +226,7 @@ export default function Disputes() {
     selected?.status !== "resolved" && selected?.status !== "closed";
 
   return (
-    <BuyerLayout breadcrumb="Disputes / My Disputes" cartCount={count}>
+    <BuyerLayout breadcrumb="Disputes / My Disputes">
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-primary">
           {error}

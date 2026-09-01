@@ -10,16 +10,13 @@ import {
   initializeOrderPayment,
   verifyOrderPayment,
 } from "../lib/services/orders.service";
-import type {
-  CreateOrderPayload,
-  DeliveryMethod,
-} from "../lib/types/order";
+import type { CreateOrderPayload, DeliveryMethod } from "../lib/types/order";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { lgasByState, nigerianStates } from "../lib/data/nigeria-lgas";
 import Paystack from "@paystack/inline-js";
 
 export default function Checkout() {
-  const { items, count, clear } = useCart();
+  const { items, clear } = useCart();
   const navigate = useNavigate();
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [deliveryMethod, setDeliveryMethod] =
@@ -63,6 +60,7 @@ export default function Checkout() {
         delivery_notes: form.delivery_notes,
       };
       const order = await createOrder(orderDetails);
+      console.log("Order created:", order);
       return order;
     } catch (err) {
       setError(getErrorMessage(err));
@@ -84,7 +82,7 @@ export default function Checkout() {
       setError("");
       const order = await handleSubmitForm();
       if (!order) return;
-console.log(order)
+      console.log(order);
       const payment = await initializeOrderPayment(order.id);
 
       const paystack = new Paystack();
@@ -118,7 +116,7 @@ console.log(order)
   };
 
   return (
-    <BuyerLayout breadcrumb="Marketplace / Checkout" cartCount={count}>
+    <BuyerLayout breadcrumb="Marketplace / Checkout">
       <div className="mx-auto  space-y-6 pb-10">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">

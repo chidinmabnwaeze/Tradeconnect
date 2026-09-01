@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { MapPin, Plus } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
-import CartDrawer from "./CartDrawer";
 import { useCart } from "./CartContext";
 import { formatNaira } from "../lib/format";
 import { getErrorMessage } from "../lib/getErrorMessage";
@@ -30,13 +29,12 @@ const cardBg = [
 
 export const Marketplace = () => {
   const [activeCategory, setActiveCategory] = useState(ALL_PRODUCE);
-  const [cartOpen, setCartOpen] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
   // null = the dedicated /categories endpoint hasn't returned yet (or isn't
   // deployed on this backend) — falls back to categories derived from the
   // loaded listings below.
   const [apiCategories, setApiCategories] = useState<Category[] | null>(null);
-  const { addItem, count } = useCart();
+  const { items: cartItems, addItem } = useCart();
   const [loading, setLoading] = useState(true);
 
   const derivedCategories = useMemo(() => {
@@ -94,16 +92,20 @@ export const Marketplace = () => {
   }, []);
 
   const addToCart = (product: Listing) => {
+    const inCartQty =
+      cartItems.find((item) => item.listing_id === product.id)?.quantity ?? 0;
+    if (product.stock <= 0 || inCartQty >= product.stock) {
+      toast.error(
+        ` ${product.stock} ${product.unit ?? "unit"} of ${product.produce.name} available`,
+      );
+      return;
+    }
     addItem(product);
     toast.success(`${product.produce.name} successfully added to cart`);
   };
 
   return (
-    <BuyerLayout
-      breadcrumb="Marketplace / Overview"
-      cartCount={count}
-      onCartClick={() => setCartOpen(true)}
-    >
+    <BuyerLayout breadcrumb="Marketplace / Overview">
     <ToastContainer/>
       <main className="pb-6">
         <section className="banner-primary flex flex-col justify-between gap-6 md:flex-row md:items-center">
@@ -215,8 +217,6 @@ export const Marketplace = () => {
           </div>
         </div>
       </main>
-
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </BuyerLayout>
   );
 };

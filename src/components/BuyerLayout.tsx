@@ -13,6 +13,8 @@ import { useEffect, useState } from "react";
 import { getCurrentUser } from "../lib/services/auth.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import type { AuthUser } from "../lib/types/auth";
+import { useCart } from "../Buyers/CartContext";
+import CartDrawer from "../Buyers/CartDrawer";
 
 interface NavItem {
   label: string;
@@ -29,16 +31,14 @@ const navItems: NavItem[] = [
 export default function BuyerLayout({
   children,
   breadcrumb,
-  cartCount = 0,
-  onCartClick,
 }: {
   children: React.ReactNode;
   breadcrumb?: string;
-  cartCount?: number;
-  onCartClick?: () => void;
 }) {
   const location = useLocation();
   const [buyer, setBuyer] = useState<AuthUser | null>(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { count } = useCart();
 
   useEffect(() => {
     const getBuyer = async () => {
@@ -119,13 +119,13 @@ export default function BuyerLayout({
           <p className="text-sm text-slate-600">{breadcrumb}</p>
           <div className="flex items-center gap-4">
             <button
-              onClick={onCartClick}
+              onClick={() => setCartOpen(true)}
               className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-100"
             >
               <ShoppingBag className="h-4 w-4" />
-              {cartCount > 0 && (
+              {count > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white">
-                  {cartCount}
+                  {count}
                 </span>
               )}
             </button>
@@ -145,6 +145,8 @@ export default function BuyerLayout({
         {/* Page content */}
         {children}
       </div>
+
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </div>
   );
 }

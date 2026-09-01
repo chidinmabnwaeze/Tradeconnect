@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
 import StatusBadge from "../components/StatusBadge";
-import { useCart } from "./CartContext";
 import { formatNaira } from "../lib/format";
 import { getMyOrders } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
@@ -35,7 +34,6 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selected, setSelected] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const { count } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -70,7 +68,7 @@ export default function Orders() {
           : 0;
 
   return (
-    <BuyerLayout breadcrumb="Orders / My Orders" cartCount={count}>
+    <BuyerLayout breadcrumb="Orders / My Orders">
       <div className="grid grid-cols-1 gap-6 pb-10 lg:grid-cols-[340px_1fr]">
         <div className="rounded-4xl border border-slate-200 bg-white p-4 shadow-sm">
           <h2 className="px-2 text-lg font-semibold text-slate-900">

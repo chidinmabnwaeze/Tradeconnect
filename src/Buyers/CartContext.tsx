@@ -5,13 +5,14 @@ import type { Listing } from "../lib/types/listing";
 // listing_id doubles as the identity POST /orders needs — price/name/etc are
 // display-only, the backend recomputes unit_price/discount/line_total itself.
 export interface CartItem extends CreateOrderItemPayload {
-  //  listing_id: number;
-  // quantity: number;
   produce_name: string;
   category_name: string;
   unit: string;
   price: number;
   image: string | null;
+  // Snapshot of the listing's available stock at add-time, used to clamp
+  // quantity client-side. The backend is still the source of truth at checkout.
+  stock: number;
 }
 
 interface CartContextValue {
@@ -34,12 +35,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
   const addItem = (listing: Listing) => {
+    if (listing.stock <= 0) return;
     setItems((prev) => {
       const existing = prev.find((item) => item.listing_id === listing.id);
       if (existing) {
+        if (existing.quantity >= listing.stock) return prev;
         return prev.map((item) =>
           item.listing_id === listing.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: Math.min(item.quantity + 1, listing.stock) }
             : item,
         );
       }
@@ -53,6 +56,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           unit: listing.unit ?? "unit",
           price: Number(listing.price),
           image: listing.primary_image_url ?? listing.produce.image_url,
+          stock: listing.stock,
         },
       ];
     });
@@ -66,7 +70,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (qty < 1) return;
     setItems((prev) =>
       prev.map((item) =>
-        item.listing_id === listingId ? { ...item, quantity: qty } : item,
+        item.listing_id === listingId
+          ? { ...item, quantity: Math.min(qty, item.stock) }
+          : item,
       ),
     );
   };

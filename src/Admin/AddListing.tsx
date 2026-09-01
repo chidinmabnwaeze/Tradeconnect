@@ -16,7 +16,7 @@ import type { Category } from "../lib/types/category";
 import type { Farmer } from "../lib/types/farmer";
 import type { ListingStatus } from "../lib/types/listing";
 
-const produceLabels = ["Vegetables", "Fruits", "Grains"];
+const produceLabels = ["Fresh", "Organic", "Seasonal"];
 
 const AddListing = () => {
   const navigate = useNavigate();
