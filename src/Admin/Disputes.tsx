@@ -237,7 +237,7 @@ export default function Disputes() {
                         className="flex items-center gap-1.5 rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
-                        Resolve
+                        Mark as Resolved
                       </button>
                       <button
                         onClick={() => handleResolve("closed")}

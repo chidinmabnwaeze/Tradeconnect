@@ -15,7 +15,7 @@ import Pagination from "../components/Pagination";
 import { type Order } from "../lib/types/order";
 import { getAllOrders, getOrder } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
-
+import { formatDate } from "../lib/format";
 // const orders: Order[] = [
 //   { id: "#ORD-1285", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Rice", emoji: "🌾", category: "Grains & Cereals", price: "₦1000/kg", qty: "5kg", total: "₦1000", status: "New" },
 //   { id: "#ORD-1286", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Spinach", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "In Transit" },
@@ -34,11 +34,6 @@ export default function Orders() {
   const [selected, setSelected] = useState<Order | null>(orders[0] ?? null);
   const PAGE_SIZE = 10;
   const pageCount = Math.ceil(orders.length / PAGE_SIZE) || 1;
-
-  const formatDate = (date: string | null) => {
-    const changeDate = date?.split("T")[0];
-    return changeDate;
-  };
 
   const steps = [
     {

@@ -422,7 +422,7 @@ export default function AddFarmer() {
         <div className="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
           <button
             type="button"
-            onClick={() => navigate("/users")}
+            onClick={() => navigate("/farmers")}
             className="rounded-xl border border-slate-200 px-6 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
           >
             Discard Changes
@@ -462,7 +462,7 @@ export default function AddFarmer() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate(`/users/${createdFarmerId}`)}
+                  onClick={() => navigate(`/farmers/${createdFarmerId}`)}
                   className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
                 >
                   View Profile
