@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -6,12 +6,27 @@ import type { FarmerCreatePayload, FarmerStatus } from "../lib/types/farmer";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { createFarmer } from "../lib/services/farmers.service";
 import { lgasByState, nigerianStates } from "../lib/data/nigeria-lgas";
+import type { Produce } from "../lib/types/produce";
+import { getProduce } from "../lib/services/produce.service";
+
 
 // Not real produce IDs — the API's primary_produce_ids[] needs the catalog's
 // numeric produce IDs, so this option list stays cosmetic until it's wired
 // to the real produce list.
-const primaryProduceOptions = ["Rice", "Cassava", "Maize", "Vegetables", "Palm Oil", "Yam"];
-const farmingMethods = ["Mixed Farming", "Subsistence", "Commercial", "Organic"];
+// const primaryProduceOptions = [
+//   "Rice",
+//   "Cassava",
+//   "Maize",
+//   "Vegetables",
+//   "Palm Oil",
+//   "Yam",
+// ];
+const farmingMethods = [
+  "Mixed Farming",
+  "Subsistence",
+  "Commercial",
+  "Organic",
+];
 
 const emptyPayload: FarmerCreatePayload = {
   name: "",
@@ -28,25 +43,31 @@ export default function AddFarmer() {
   const [payload, setPayload] = useState<FarmerCreatePayload>(emptyPayload);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-
-  // Extra profile fields — merged into the payload on submit below.
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [farmName, setFarmName] = useState("");
-  const [farmSize, setFarmSize] = useState("");
-  const [farmingMethod, setFarmingMethod] = useState("");
-  const [experience, setExperience] = useState("");
-  const [farmAddress, setFarmAddress] = useState("");
-  const [selectedProduce, setSelectedProduce] = useState<string[]>([]);
+  const [availableProduce, setAvailableProduce] = useState<Produce[]>([]);
+  const [selectedProduce, setSelectedProduce] = useState<Produce[]>([]);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [createdFarmerId, setCreatedFarmerId] = useState<number | null>(null);
 
-  const toggleProduce = (item: string) => {
+  useEffect(() => {
+    const loadProduce = async () => {
+      try {
+        const produceList = await getProduce();
+        setAvailableProduce(produceList);
+      } catch (err) {
+        setError(getErrorMessage(err));
+      }
+    };
+    loadProduce();
+  }, []);
+
+  const toggleProduce = (item: Produce) => {
     setSelectedProduce((prev) =>
-      prev.includes(item) ? prev.filter((p) => p !== item) : [...prev, item],
+      prev.some((p) => p.id === item.id)
+        ? prev.filter((p) => p.id !== item.id)
+        : [...prev, item],
     );
   };
 
@@ -63,7 +84,9 @@ export default function AddFarmer() {
   };
 
   const handlePayloadChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
     const { name, value } = e.target;
     setPayload((prev) => ({ ...prev, [name]: value }));
@@ -78,13 +101,6 @@ export default function AddFarmer() {
     setPayload(emptyPayload);
     setFirstName("");
     setLastName("");
-    setEmail("");
-    setAddress("");
-    setFarmName("");
-    setFarmSize("");
-    setFarmingMethod("");
-    setExperience("");
-    setFarmAddress("");
     setSelectedProduce([]);
     setError("");
   };
@@ -114,14 +130,10 @@ export default function AddFarmer() {
     try {
       const created = await createFarmer({
         ...payload,
-        email: email.trim() || undefined,
-        address: address.trim() || undefined,
-        farm_name: farmName.trim() || undefined,
-        farm_size_hectares: farmSize ? Number(farmSize) : undefined,
-        farming_method: farmingMethod || undefined,
-        years_experience: experience ? Number(experience) : undefined,
-        farm_address: farmAddress.trim() || undefined,
+        name: `${firstName} ${lastName}`.trim(),
+        primary_produce_ids: selectedProduce.map((p) => p.id),
       });
+
       setCreatedFarmerId(created.id);
       setConfirmed(true);
     } catch (err) {
@@ -146,7 +158,9 @@ export default function AddFarmer() {
         className="relative rounded-3xl border border-slate-200 bg-white shadow-sm"
       >
         <div className="border-b border-slate-100 px-6 py-5">
-          <h2 className="text-lg font-semibold text-slate-900">Add New Farmer</h2>
+          <h2 className="text-lg font-semibold text-slate-900">
+            Add New Farmer
+          </h2>
           <p className="text-sm text-slate-500">
             Fill in the details to register and add a new farmer
           </p>
@@ -305,7 +319,9 @@ export default function AddFarmer() {
                     <button
                       key={s}
                       type="button"
-                      onClick={() => setPayload((prev) => ({ ...prev, status: s }))}
+                      onClick={() =>
+                        setPayload((prev) => ({ ...prev, status: s }))
+                      }
                       className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition ${
                         payload.status === s
                           ? "bg-primary text-white"
@@ -332,11 +348,12 @@ export default function AddFarmer() {
                     Farm Name
                   </label>
                   <input
+                    name="farm_name"
                     type="text"
                     placeholder="e.g. Ibrahim Family Farm"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    value={farmName}
-                    onChange={(e) => setFarmName(e.target.value)}
+                    value={payload.farm_name ?? ""}
+                    onChange={handlePayloadChange}
                   />
                 </div>
                 <div>
@@ -344,11 +361,12 @@ export default function AddFarmer() {
                     Farm Size (Hectares)
                   </label>
                   <input
+                    name="farm_size_hectares"
                     type="number"
                     placeholder="e.g. 4.5"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    value={farmSize}
-                    onChange={(e) => setFarmSize(e.target.value)}
+                    value={payload.farm_size_hectares ?? ""}
+                    onChange={handlePayloadChange}
                   />
                 </div>
               </div>
@@ -358,9 +376,10 @@ export default function AddFarmer() {
                     Farming Method
                   </label>
                   <select
+                    name="farming_method"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    value={farmingMethod}
-                    onChange={(e) => setFarmingMethod(e.target.value)}
+                    value={payload.farming_method ?? ""}
+                    onChange={handlePayloadChange}
                   >
                     <option value="">Select method</option>
                     {farmingMethods.map((m) => (
@@ -373,11 +392,12 @@ export default function AddFarmer() {
                     Years of Experience
                   </label>
                   <input
+                    name="years_experience"
                     type="number"
                     placeholder="e.g. 5"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    value={experience}
-                    onChange={(e) => setExperience(e.target.value)}
+                    value={payload.years_experience ?? ""}
+                    onChange={handlePayloadChange}
                   />
                 </div>
               </div>
@@ -386,18 +406,18 @@ export default function AddFarmer() {
                   Primary Produce
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {primaryProduceOptions.map((item) => (
+                  {availableProduce.map((item) => (
                     <button
-                      key={item}
+                      key={item.id}
                       type="button"
                       onClick={() => toggleProduce(item)}
                       className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-                        selectedProduce.includes(item)
+                        selectedProduce.some((p) => p.id === item.id)
                           ? "bg-primary text-white"
                           : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
                       }`}
                     >
-                      {item}
+                      {item.name}
                     </button>
                   ))}
                 </div>
@@ -407,11 +427,12 @@ export default function AddFarmer() {
                   Farm Address
                 </label>
                 <textarea
+                  name="farm_address"
                   rows={2}
                   placeholder="Enter farm address"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-                  value={farmAddress}
-                  onChange={(e) => setFarmAddress(e.target.value)}
+                  value={payload.farm_address ?? ""}
+                  onChange={handlePayloadChange}
                 />
               </div>
             </div>
@@ -438,7 +459,7 @@ export default function AddFarmer() {
 
         {/* Success confirmation overlay */}
         {confirmed && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-3xl bg-black/30">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
             <div className="w-80 rounded-3xl bg-white p-8 shadow-2xl text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
                 <CheckCircle className="h-9 w-9 text-emerald-500" />

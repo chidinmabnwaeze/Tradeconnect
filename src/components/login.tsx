@@ -43,6 +43,7 @@ const navigate = useNavigate()
             alt="Logo-cover"
             className="w-full max-w-sm object-contain"
           />
+         
         </section>
 
         <form

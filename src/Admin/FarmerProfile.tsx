@@ -12,8 +12,15 @@ import {
 import Layout from "../components/Layout";
 import Avatar from "../components/Avatar";
 import StatusBadge from "../components/StatusBadge";
-import { getFarmer } from "../lib/services/farmers.service";
-import { type Farmer } from "../lib/types/farmer";
+import {
+  getFarmer,
+  setFarmerStatus,
+  setFarmerVerification,
+} from "../lib/services/farmers.service";
+import {
+  type Farmer,
+  type FarmerVerificationStatus,
+} from "../lib/types/farmer";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { formatDate } from "../lib/format";
 
@@ -55,7 +62,12 @@ export default function FarmerProfile() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
   const [farmer, setFarmer] = useState<Farmer | null>(null);
-
+  const [verificationStatus, setVerificationStatus] = useState<
+    "pending" | "verified" | "rejected"
+  >("pending");
+  const [farmerStatusState, setFarmerStatusState] = useState<
+    "active" | "inactive"
+  >();
   const params = useParams();
   const farmerId = Number(params.id);
 
@@ -64,12 +76,40 @@ export default function FarmerProfile() {
       try {
         const response = await getFarmer(farmerId);
         setFarmer(response);
+        setVerificationStatus(response.verification_status);
+        console.log("Farmer profile fetched successfully:", response);
       } catch (error) {
         getErrorMessage(error);
       }
     };
     handleFarmerProfile(farmerId);
   }, [farmerId]);
+
+  const handleVerifyFarmer = async (
+    id: number,
+    status: FarmerVerificationStatus,
+  ) => {
+    try {
+      const response = await setFarmerVerification(id, status);
+      setVerificationStatus(response.verification_status);
+      console.log("Farmer verification status updated successfully:", response);
+    } catch (error) {
+      getErrorMessage(error);
+    }
+  };
+
+  const handleFarmerStatusChange = async (
+    id: number,
+    status: "active" | "inactive",
+  ) => {
+    try {
+      const response = await setFarmerStatus(id, status);
+      setFarmerStatusState(response.status);
+      console.log("Farmer status updated successfully:", response);
+    } catch (error) {
+      getErrorMessage(error);
+    }
+  };
 
   return (
     <Layout
@@ -110,11 +150,25 @@ export default function FarmerProfile() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              Sub Profile
+            <button
+              onClick={() => handleFarmerStatusChange(farmerId, status === "active" ? "inactive" : "active")}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              {farmerStatusState === "active" ? "Deactivate Farmer" : "Activate Farmer"}
             </button>
-            <button className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50">
-              Suspend
+            <button
+              onClick={() => handleVerifyFarmer(farmerId, "verified")}
+              className="rounded-xl border border-green-200 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50"
+            >
+              {verificationStatus === "verified" ? "Verified" : "Verify Farmer"}
+            </button>
+            <button
+              onClick={() => handleVerifyFarmer(farmerId, "rejected")}
+              className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
+            >
+              {verificationStatus === "rejected"
+                ? "Suspended"
+                : "Suspend Farmer"}
             </button>
           </div>
         </div>

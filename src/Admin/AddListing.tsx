@@ -113,8 +113,10 @@ const AddListing = () => {
     if (!categoryId) return setError("Please select a category");
     if (!image) return setError("Please upload a produce image");
     if (!selectedFarmerId) return setError("Please select a farmer");
-    if (!price || Number(price) < 0) return setError("Please enter a valid price");
-    if (!stock || Number(stock) < 0) return setError("Please enter a valid stock quantity");
+    if (!price || Number(price) < 0)
+      return setError("Please enter a valid price");
+    if (!stock || Number(stock) < 0)
+      return setError("Please enter a valid stock quantity");
 
     setLoading(true);
     try {
@@ -135,7 +137,7 @@ const AddListing = () => {
         minimum_order_quantity: minOrderQty ? Number(minOrderQty) : undefined,
         available_from: harvestDate || undefined,
       });
-console.log("Listing created successfully");
+      console.log("Listing created successfully");
       navigate("/listings");
     } catch (err) {
       setError(getErrorMessage(err));
@@ -216,7 +218,9 @@ console.log("Listing created successfully");
               className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
             >
               <option value="">
-                {categoriesLoading ? "Loading categories..." : "Select category"}
+                {categoriesLoading
+                  ? "Loading categories..."
+                  : "Select category"}
               </option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -271,7 +275,9 @@ console.log("Listing created successfully");
           <p>Select Farmer</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {farmersLoading && <p className="text-sm text-gray-400">Loading farmers...</p>}
+          {farmersLoading && (
+            <p className="text-sm text-gray-400">Loading farmers...</p>
+          )}
           {!farmersLoading && filteredFarmers.length === 0 && (
             <p className="text-sm text-gray-400">No farmers found.</p>
           )}

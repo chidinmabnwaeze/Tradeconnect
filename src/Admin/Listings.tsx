@@ -18,7 +18,6 @@ export default function Listings() {
   const pageCount = Math.ceil(listings.length / PAGE_SIZE) || 1;
   const navigate = useNavigate();
 
-
   useEffect(() => {
     const fetchlistings = async () => {
       setLoading(true);
@@ -78,7 +77,7 @@ export default function Listings() {
             </tr>
           </thead>
           <tbody>
-   {loading && (
+            {loading && (
               <tr>
                 <td colSpan={5} className="py-26 m-auto">
                   <div className="flex justify-center items-center">
@@ -114,7 +113,9 @@ export default function Listings() {
                   </div>
                 </td>
                 <td className="py-3">
-                  <p className="font-medium text-slate-900">{listing.farmer.name}</p>
+                  <p className="font-medium text-slate-900">
+                    {listing.farmer.name}
+                  </p>
                   <p className="text-xs text-slate-400">{listing.farmer_id}</p>
                 </td>
                 <td className="py-3 font-medium text-primary">
