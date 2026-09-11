@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Funnel, Plus, SquarePen } from "lucide-react";
+import { Funnel, Plus, SquarePen, UserPlus } from "lucide-react";
 import Layout from "../components/Layout";
 import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
@@ -126,10 +126,21 @@ export default function Listings() {
                   <StatusBadge status={listing.status} />
                 </td>
                 <td className="py-3">
-                  <button className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
-                    <SquarePen className="h-3.5 w-3.5" />
-                    Edit
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+                      <SquarePen className="h-3.5 w-3.5" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() =>
+                        navigate(`/add-listing?produce_id=${listing.produce.id}`)
+                      }
+                      className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Add Farmer
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -113,12 +113,12 @@ export default function FarmerProfile() {
 
   return (
     <Layout
-      breadcrumb={`Users / Farmers / ${farmer?.name ?? "Farmer Profile"}`}
+      breadcrumb={`Farmers / ${farmer?.name ?? "Farmer Profile"}`}
       compact
     >
       {/* Back */}
       <button
-        onClick={() => navigate("/users")}
+        onClick={() => navigate("/farmers")}
         className="mb-4 flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -172,6 +172,7 @@ export default function FarmerProfile() {
             </button>
           </div>
         </div>
+
 
         {/* Stats */}
         <div className="mt-6 grid grid-cols-3 divide-x divide-slate-100 rounded-2xl bg-global-bg">

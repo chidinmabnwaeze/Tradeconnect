@@ -3,23 +3,25 @@ import Avatar from "../components/Avatar";
 import Layout from "../components/Layout";
 import addImage from "../assets/add image.png";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   createCategory,
   getCategories,
 } from "../lib/services/categories.service";
-import { createProduce } from "../lib/services/produce.service";
+import { createProduce, getProduce } from "../lib/services/produce.service";
 import { getFarmers } from "../lib/services/farmers.service";
 import { createFarmerListing } from "../lib/services/listings.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import type { Category } from "../lib/types/category";
 import type { Farmer } from "../lib/types/farmer";
+import type { Produce } from "../lib/types/produce";
 import type { ListingStatus } from "../lib/types/listing";
 
 const produceLabels = ["Fresh", "Organic", "Seasonal"];
 
 const AddListing = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,19 @@ const AddListing = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [creatingCategory, setCreatingCategory] = useState(false);
 
-  // Produce fields actually sent to POST /admin/produce
+  // Existing produce catalog — pick one to reuse, or leave empty to create new.
+  // Arriving from a Listings row's "Add Farmer" action pre-selects that produce.
+  const [existingProduce, setExistingProduce] = useState<Produce[]>([]);
+  const [produceLoading, setProduceLoading] = useState(true);
+  const [selectedProduceId, setSelectedProduceId] = useState<number | "">(
+    () => {
+      const produceId = searchParams.get("produce_id");
+      return produceId ? Number(produceId) : "";
+    },
+  );
+
+  // Produce fields actually sent to POST /admin/produce — only used when
+  // selectedProduceId is "" (i.e. creating a brand new produce)
   const [produceName, setProduceName] = useState("");
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [image, setImage] = useState<File | null>(null);
@@ -65,6 +79,19 @@ const AddListing = () => {
       }
     };
     loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const loadProduce = async () => {
+      try {
+        setExistingProduce(await getProduce());
+      } catch (err) {
+        setError(getErrorMessage(err));
+      } finally {
+        setProduceLoading(false);
+      }
+    };
+    loadProduce();
   }, []);
 
   useEffect(() => {
@@ -109,9 +136,11 @@ const AddListing = () => {
   const handleSaveListing = async () => {
     setError("");
 
-    if (!produceName.trim()) return setError("Please enter a produce name");
-    if (!categoryId) return setError("Please select a category");
-    if (!image) return setError("Please upload a produce image");
+    if (!selectedProduceId) {
+      if (!produceName.trim()) return setError("Please enter a produce name");
+      if (!categoryId) return setError("Please select a category");
+      if (!image) return setError("Please upload a produce image");
+    }
     if (!selectedFarmerId) return setError("Please select a farmer");
     if (!price || Number(price) < 0)
       return setError("Please enter a valid price");
@@ -120,14 +149,18 @@ const AddListing = () => {
 
     setLoading(true);
     try {
-      const createdProduce = await createProduce({
-        category_id: categoryId,
-        name: produceName.trim(),
-        image,
-      });
+      const produceId = selectedProduceId
+        ? selectedProduceId
+        : (
+            await createProduce({
+              category_id: categoryId as number,
+              name: produceName.trim(),
+              image: image as File,
+            })
+          ).id;
 
       await createFarmerListing(selectedFarmerId, {
-        produce_id: createdProduce.id,
+        produce_id: produceId,
         price: Number(price),
         stock: Number(stock),
         status,
@@ -198,46 +231,71 @@ const AddListing = () => {
           </p>
         </div>
         <div className="flex flex-col gap-2 mb-4">
-          <label className="font-medium">Produce Name</label>
-          <input
-            type="text"
-            placeholder="e.g. Apples"
+          <label className="font-medium">Produce</label>
+          <select
+            value={selectedProduceId}
+            onChange={(e) =>
+              setSelectedProduceId(e.target.value ? Number(e.target.value) : "")
+            }
             className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-            value={produceName}
-            onChange={(e) => setProduceName(e.target.value)}
-          />
-        </div>
-        <div className="flex justify-between gap-2 mb-4">
-          <div className="flex flex-col gap-2 w-full">
-            <label className="font-medium">Category</label>
-            <select
-              value={categoryId}
-              onChange={(e) =>
-                setCategoryId(e.target.value ? Number(e.target.value) : "")
-              }
-              className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-            >
-              <option value="">
-                {categoriesLoading
-                  ? "Loading categories..."
-                  : "Select category"}
+          >
+            <option value="">
+              {produceLoading ? "Loading produce..." : "+ Add a new produce"}
+            </option>
+            {existingProduce.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
               </option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
+            ))}
+          </select>
+          <p className="text-gray-400 text-sm">
+            Pick an existing produce so another farmer can sell it too, or
+            leave this on "+ Add a new produce" to create one.
+          </p>
+        </div>
+        {!selectedProduceId && (
+          <>
+            <div className="flex flex-col gap-2 mb-4">
+              <label className="font-medium">Produce Name</label>
+              <input
+                type="text"
+                placeholder="e.g. Apples"
+                className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+                value={produceName}
+                onChange={(e) => setProduceName(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2 mb-4 w-1/2">
+              <label className="font-medium">Category</label>
+              <select
+                value={categoryId}
+                onChange={(e) =>
+                  setCategoryId(e.target.value ? Number(e.target.value) : "")
+                }
+                className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+              >
+                <option value="">
+                  {categoriesLoading
+                    ? "Loading categories..."
+                    : "Select category"}
                 </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-2 w-full">
-            <label className="font-medium">Harvest/ Available Date</label>
-            <input
-              type="date"
-              className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-              value={harvestDate}
-              onChange={(e) => setHarvestDate(e.target.value)}
-            />
-          </div>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        )}
+        <div className="flex flex-col gap-2 mb-4 w-1/2">
+          <label className="font-medium">Harvest/ Available Date</label>
+          <input
+            type="date"
+            className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+            value={harvestDate}
+            onChange={(e) => setHarvestDate(e.target.value)}
+          />
         </div>
         <div className="flex flex-col gap-2 mb-4 w-2/5">
           <label className="font-medium">Produce Label</label>
@@ -357,47 +415,49 @@ const AddListing = () => {
         </div>
       </section>
 
-      <section className="bg-white p-6 rounded-lg mt-6">
-        <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
-          <h1 className="text-xl font-bold">Produce Image</h1>
-          <p className="text-gray-400 font-medium">
-            This is the image that will be displayed to buyers when they view
-            this produce
-          </p>
-        </div>
-        <div className="flex flex-col justify-between gap-2 mb-4 border p-20 border-dashed border-gray-400 items-center rounded-md">
-          <img src={addImage} alt="add file image" />
-          <p className="font-bold text-md"> Drag and drop image here </p>
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="items-center flex justify-center text-center text-primary"
-            onChange={handleImageChange}
-          />
-        </div>
-        <div className="flex gap-1 justify-between items-center">
-          <p className="text-gray-400 text-sm">
-            Supported formats: JPG, PNG, WebP
-          </p>
-          <p className="text-gray-400 text-sm">Max file size: 5MB</p>
-        </div>
-
-        {image && (
-          <div className="flex flex-col gap-2 mb-4 w-2/5 mt-4">
-            Uploaded files
-            <div className="flex items-center justify-between border border-[#4A7C2A]/30 rounded-lg p-2">
-              <span>{image.name}</span>
-              <button
-                type="button"
-                onClick={() => setImage(null)}
-                className="text-red-500 hover:text-red-700"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+      {!selectedProduceId && (
+        <section className="bg-white p-6 rounded-lg mt-6">
+          <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
+            <h1 className="text-xl font-bold">Produce Image</h1>
+            <p className="text-gray-400 font-medium">
+              This is the image that will be displayed to buyers when they
+              view this produce
+            </p>
           </div>
-        )}
-      </section>
+          <div className="flex flex-col justify-between gap-2 mb-4 border p-20 border-dashed border-gray-400 items-center rounded-md">
+            <img src={addImage} alt="add file image" />
+            <p className="font-bold text-md"> Drag and drop image here </p>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="items-center flex justify-center text-center text-primary"
+              onChange={handleImageChange}
+            />
+          </div>
+          <div className="flex gap-1 justify-between items-center">
+            <p className="text-gray-400 text-sm">
+              Supported formats: JPG, PNG, WebP
+            </p>
+            <p className="text-gray-400 text-sm">Max file size: 5MB</p>
+          </div>
+
+          {image && (
+            <div className="flex flex-col gap-2 mb-4 w-2/5 mt-4">
+              Uploaded files
+              <div className="flex items-center justify-between border border-[#4A7C2A]/30 rounded-lg p-2">
+                <span>{image.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setImage(null)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="bg-white p-6 rounded-lg mt-6">
         <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">

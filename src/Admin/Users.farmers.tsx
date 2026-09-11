@@ -90,7 +90,7 @@ export default function Users() {
               <tr
                 key={farmer.id}
                 className="border-t border-slate-100 cursor-pointer hover:bg-slate-50 transition"
-                onClick={() => navigate(`/users/${farmer.id}`)}
+                onClick={() => navigate(`/farmers/${farmer.id}`)}
               >
                 <td className="py-3">
                   <div className="flex items-center gap-3">

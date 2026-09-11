@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
     label: "Users",
     icon: Users,
     children: [
-      { label: "Farmers", path: "/users" },
+      { label: "Farmers", path: "/farmers" },
       { label: "Buyers", path: "/buyers" },
     ],
   },

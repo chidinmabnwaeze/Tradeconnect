@@ -15,18 +15,7 @@ import Pagination from "../components/Pagination";
 import { type Order } from "../lib/types/order";
 import { getAllOrders, getOrder } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
-import { formatDate } from "../lib/format";
-// const orders: Order[] = [
-//   { id: "#ORD-1285", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Rice", emoji: "🌾", category: "Grains & Cereals", price: "₦1000/kg", qty: "5kg", total: "₦1000", status: "New" },
-//   { id: "#ORD-1286", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Spinach", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "In Transit" },
-//   { id: "#ORD-1287", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Cassava", emoji: "🥔", category: "Roots & Tubers", price: "₦1000/kg", qty: "10kg", total: "₦1000", status: "Delivered" },
-//   { id: "#ORD-1288", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Spinach", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "Cancelled" },
-//   { id: "#ORD-1289", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Maize (Corn)", emoji: "🌽", category: "Grains & Cereals", price: "₦1000/kg", qty: "15kg", total: "₦1000", status: "In Transit" },
-//   { id: "#ORD-1290", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Lettuce", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "New" },
-//   { id: "#ORD-1291", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Lettuce", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "Delivered" },
-//   { id: "#ORD-1292", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Lettuce", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "Cancelled" },
-//   { id: "#ORD-1293", date: "Today, 08:14", buyer: "Hauwa Makurdi", buyerCode: "BYR-01803", location: "Kaduna - Kagarko LGA", produce: "Lettuce", emoji: "🥬", category: "Vegetables", price: "₦1000/kg", qty: "20 bundles", total: "₦1000", status: "New" },
-// ];
+import { formatDate } from "../lib/format"; 
 
 export default function Orders() {
   const [page, setPage] = useState(1);
