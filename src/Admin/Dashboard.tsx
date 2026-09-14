@@ -9,6 +9,7 @@ import {
   Users,
   X,
   Bell,
+  Clock
 } from "lucide-react";
 import {
   LineChart,
@@ -22,9 +23,17 @@ import {
 import Layout from "../components/Layout";
 import { type DashboardStats } from "../lib/types/dashboard";
 import { type AuthUser } from "../lib/types/auth";
-import { getDashboardStats } from "../lib/services/dashboard.service";
+import {
+  getDashboardStats,
+  getNotifications,
+  getRecentActivities,
+} from "../lib/services/dashboard.service";
 import { getCurrentUser } from "../lib/services/auth.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { formatDate, formatDays } from "../lib/format";
+import { useNavigate } from "react-router";
+import type { Activity } from "../lib/types/activity";
+import type { Notification, NotificationListParams } from "../lib/types/notification";
 
 const revenueData = [
   { month: "Jan", revenue: 22 },
@@ -36,105 +45,39 @@ const revenueData = [
   { month: "Jul", revenue: 88 },
 ];
 
-const recentActivity = [
-  {
-    title: "Order #1284 confirmed",
-    subtitle: "Big Tomatoes - Musa Farm",
-    status: "Confirmed",
-    time: "2m ago",
-    icon: ShieldCheck,
-  },
-  {
-    title: "New farmer - Amina S.",
-    subtitle: "Kaduna, Jarigi Farm",
-    status: "New",
-    time: "14h ago",
-    icon: Users,
-  },
-  {
-    title: "Listing published",
-    subtitle: "Fresh Onions - N750/kg",
-    status: "Live",
-    time: "52m ago",
-    icon: Package,
-  },
-  {
-    title: "Dispute #07 opened",
-    subtitle: "Order #1271 · Quality issue",
-    status: "Open",
-    time: "1w ago",
-    icon: MessageSquare,
-  },
-  {
-    title: "New farmer - Amina B.",
-    subtitle: "Plateau, Green Farm",
-    status: "New",
-    time: "2d ago",
-    icon: Users,
-  },
-  {
-    title: "Order #1280 confirmed",
-    subtitle: "Cassava - Yusuf Farm",
-    status: "Confirmed",
-    time: "3d ago",
-    icon: ShieldCheck,
-  },
-];
 
-const notifications = [
-  {
-    title: "Order #1285 needs confirmation",
-    time: "8 mins ago",
-    icon: ShoppingBag,
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    title: "New farmer application received",
-    time: "22 mins ago",
-    icon: Users,
-    color: "bg-sky-100 text-sky-600",
-  },
-  {
-    title: "Dispute #07 has a new message",
-    time: "1h ago",
-    icon: MessageSquare,
-    color: "bg-rose-100 text-rose-600",
-  },
-  {
-    title: "Listing #120 approved",
-    time: "2h ago",
-    icon: Package,
-    color: "bg-emerald-100 text-emerald-600",
-  },
-  {
-    title: "Order #1271 delivered",
-    time: "1d ago",
-    icon: ShieldCheck,
-    color: "bg-emerald-100 text-emerald-600",
-  },
-];
-
-const ordersQueue = [
-  {
-    order: "#1285",
-    item: "5kg Peppers",
-    status: "Confirm",
-    time: "8 mins ago",
-  },
-  {
-    order: "#1286",
-    item: "2kg Tomatoes",
-    status: "Confirm",
-    time: "22 mins ago",
-  },
-  {
-    order: "#1287",
-    item: "10kg Onions",
-    status: "Confirm",
-    time: "41 mins ago",
-  },
-  { order: "#1288", item: "20kg Rice", status: "Confirm", time: "1 hr ago" },
-];
+// const notifications = [
+//   {
+//     title: "Order #1285 needs confirmation",
+//     time: "8 mins ago",
+//     icon: ShoppingBag,
+//     color: "bg-primary/10 text-primary",
+//   },
+//   {
+//     title: "New farmer application received",
+//     time: "22 mins ago",
+//     icon: Users,
+//     color: "bg-sky-100 text-sky-600",
+//   },
+//   {
+//     title: "Dispute #07 has a new message",
+//     time: "1h ago",
+//     icon: MessageSquare,
+//     color: "bg-rose-100 text-rose-600",
+//   },
+//   {
+//     title: "Listing #120 approved",
+//     time: "2h ago",
+//     icon: Package,
+//     color: "bg-emerald-100 text-emerald-600",
+//   },
+//   {
+//     title: "Order #1271 delivered",
+//     time: "1d ago",
+//     icon: ShieldCheck,
+//     color: "bg-emerald-100 text-emerald-600",
+//   },
+// ];
 
 const Dashboard = () => {
   const [showActivity, setShowActivity] = useState(false);
@@ -143,6 +86,9 @@ const Dashboard = () => {
     null,
   );
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const navigate = useNavigate();
 
   const stats = [
     {
@@ -198,7 +144,7 @@ const Dashboard = () => {
   }, []);
 
   const getGreeting = () => {
-    const currentHour  = new Date().getHours();
+    const currentHour = new Date().getHours();
     if (currentHour < 12) {
       return "Good morning";
     } else if (currentHour < 18) {
@@ -206,7 +152,32 @@ const Dashboard = () => {
     } else {
       return "Good evening";
     }
-  }
+  };
+
+  useEffect(() => {
+    const getRecentActivity = async () => {
+      try {
+        const response = await getRecentActivities({ limit: 10 });
+        setRecentActivity(response);
+      } catch (err) {
+        getErrorMessage(err);
+      }
+    };
+    getRecentActivity();
+  }, []);
+
+  useEffect(() => {
+    const getAllNotifications = async () => {
+      try {
+        const response = await getNotifications({ status: "unread", per_page: 10 });
+        setNotifications(response)
+        console.log("Notifications fetched successfully:", response);
+      } catch (err) {
+        getErrorMessage(err);
+      }
+    };
+    getAllNotifications();
+  },[]);
 
   return (
     <>
@@ -339,7 +310,7 @@ const Dashboard = () => {
               </div>
               <div className="mt-5 space-y-4">
                 {recentActivity.slice(0, 4).map((item) => {
-                  const Icon = item.icon;
+                
                   return (
                     <div
                       key={item.title}
@@ -347,15 +318,15 @@ const Dashboard = () => {
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3">
-                          <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm">
-                            <Icon className="h-5 w-5" />
+                          <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 ">
+                            <Clock className="h-5 w-5 text-primary" />
                           </div>
                           <div>
                             <p className="font-medium text-slate-900">
                               {item.title}
                             </p>
                             <p className="text-sm text-slate-500">
-                              {item.subtitle}
+                              {item.description}
                             </p>
                           </div>
                         </div>
@@ -363,7 +334,9 @@ const Dashboard = () => {
                           <p className="text-sm font-semibold text-slate-900">
                             {item.status}
                           </p>
-                          <p className="text-xs text-slate-500">{item.time}</p>
+                          <p className="text-xs text-slate-500">
+                            {formatDays(item.occurred_at)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -378,24 +351,35 @@ const Dashboard = () => {
                   <h3 className="text-lg font-semibold">Orders queue</h3>
                   <p className="text-sm text-slate-500">Needs action</p>
                 </div>
-                <button className="text-sm font-medium text-primary">
+                <button
+                  className="text-sm font-medium text-primary cursor-pointer"
+                  onClick={() => navigate(`/orders`)}
+                >
                   View all
                 </button>
               </div>
               <div className="mt-5 space-y-4">
-                {ordersQueue.map((order) => (
+                {dashboardData?.order_action_queue.slice(0, 4).map((order) => (
                   <div
-                    key={order.order}
-                    className="flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 p-4"
+                    key={order.order_number}
+                    onClick={() =>
+                      navigate(
+                        `/orders?order=${encodeURIComponent(order.order_number)}`,
+                      )
+                    }
+                    className="flex items-center justify-between cursor-pointer rounded-3xl border border-slate-200 bg-slate-50 p-4"
                   >
                     <div>
                       <p className="font-medium text-slate-900">
-                        {order.order} - {order.item}
+                        {order.order_number} - {order.buyer.name}
                       </p>
-                      <p className="text-sm text-slate-500">{order.time}</p>
+
+                      <p className="text-sm text-slate-500">
+                        {formatDays(order.placed_at)}
+                      </p>
                     </div>
                     <button className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90">
-                      {order.status}
+                      {order.action.label}
                     </button>
                   </div>
                 ))}
@@ -428,7 +412,7 @@ const Dashboard = () => {
             </div>
             <div className="space-y-3 p-6">
               {recentActivity.map((item, idx) => {
-                const Icon = item.icon;
+                // const Icon = item.icon;
                 return (
                   <div
                     key={idx}
@@ -436,21 +420,23 @@ const Dashboard = () => {
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm text-slate-700">
-                        <Icon className="h-4 w-4" />
+                        <Clock className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-slate-900">
                           {item.title}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {item.subtitle}
+                          {item.description}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-semibold text-slate-700">
                           {item.status}
                         </p>
-                        <p className="text-xs text-slate-400">{item.time}</p>
+                        <p className="text-xs text-slate-400">
+                          {item.occurred_at}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -491,7 +477,7 @@ const Dashboard = () => {
               </button>
               <div className="space-y-3">
                 {notifications.map((n, idx) => {
-                  const Icon = n.icon;
+                  // const Icon = n.icon;
                   return (
                     <div
                       key={idx}
@@ -500,14 +486,14 @@ const Dashboard = () => {
                       <div
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${n.color}`}
                       >
-                        <Icon className="h-4 w-4" />
+                        {/* <Icon className="h-4 w-4" /> */}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-slate-900">
                           {n.title}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">
-                          {n.time}
+                          {formatDate(n.created_at)}
                         </p>
                       </div>
                       <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />

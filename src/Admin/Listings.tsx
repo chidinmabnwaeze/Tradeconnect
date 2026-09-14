@@ -45,6 +45,12 @@ export default function Listings() {
           </p>
         </div>
 
+        {error ? (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+
         <div className="my-6 flex items-center justify-between gap-4">
           <input
             placeholder="Search listings..."
@@ -65,87 +71,100 @@ export default function Listings() {
           </div>
         </div>
 
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="text-slate-500">
-              <th className="pb-3 font-medium">Produce</th>
-              <th className="pb-3 font-medium">Farmer</th>
-              <th className="pb-3 font-medium">Price</th>
-              <th className="pb-3 font-medium">Stock</th>
-              <th className="pb-3 font-medium">Status</th>
-              <th className="pb-3 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr>
-                <td colSpan={5} className="py-26 m-auto">
-                  <div className="flex justify-center items-center">
-                    <div className="loader"></div>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-240 table-fixed border-separate border-spacing-0 text-left text-sm">
+            <thead>
+              <tr className="text-slate-500">
+                <th className="w-[22%] pb-3 pr-3 font-medium">Produce</th>
+                <th className="w-[18%] pb-3 pr-3 font-medium">Farmer</th>
+                <th className="w-[15%] pb-3 pr-3 font-medium">Price</th>
+                <th className="w-[12%] pb-3 pr-3 font-medium">Stock</th>
+                <th className="w-[10%] pb-3 pr-3 font-medium">Status</th>
+                <th className="w-[15%] pb-3 pr-3 text-right font-medium">
+                  Actions
+                </th>
               </tr>
-            )}
+            </thead>
+            <tbody>
+              {loading && (
+                <tr>
+                  <td colSpan={5} className="py-26 m-auto">
+                    <div className="flex justify-center items-center">
+                      <div className="loader"></div>
+                    </div>
+                  </td>
+                </tr>
+              )}
 
-            {listings.map((listing, idx) => (
-              <tr key={idx} className="border-t border-slate-100">
-                <td className="py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-global-bg text-2xl">
-                      {listing.produce.image_url ? (
-                        <img
-                          src={listing.produce.image_url}
-                          alt={listing.produce.name}
-                          className="h-full w-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <span>{listing.produce.name.charAt(0)}</span>
-                      )}
+              {listings.map((listing, idx) => (
+                <tr
+                  key={idx}
+                  className="border-t border-slate-100 align-middle"
+                >
+                  <td className="px-3 py-4 pr-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-global-bg text-2xl">
+                        {listing.produce.image_url ? (
+                          <img
+                            src={listing.produce.image_url}
+                            alt={listing.produce.name}
+                            className="h-full w-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <span>{listing.produce.name.charAt(0)}</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">
+                          {listing.produce.name}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {listing.produce.category.name}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        {listing.produce.name}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {listing.produce.category.name}
-                      </p>
+                  </td>
+                  <td className="px-3 py-4 pr-4">
+                    <p className="font-medium text-slate-900">
+                      {listing.farmer.name}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {listing.farmer_id}
+                    </p>
+                  </td>
+                  <td className="px-3 py-4 pr-4 font-medium text-primary">
+                    {listing.price}
+                  </td>
+                  <td className="px-3 py-4 pr-4 text-slate-600">
+                    {listing.stock}
+                  </td>
+                  <td className="px-3 py-4 pr-4">
+                    <StatusBadge status={listing.status} />
+                  </td>
+                  <td className="px-3 py-4 text-right">
+                    <div className="flex items-center justify-end gap-4">
+                      <button className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+                        <SquarePen className="h-3.5 w-3.5" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/add-listing?produce_id=${listing.produce.id}`,
+                          )
+                        }
+                        className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+                      >
+                        <UserPlus className="h-3.5 w-3.5" />
+                        Add Farmer
+                      </button>
                     </div>
-                  </div>
-                </td>
-                <td className="py-3">
-                  <p className="font-medium text-slate-900">
-                    {listing.farmer.name}
-                  </p>
-                  <p className="text-xs text-slate-400">{listing.farmer_id}</p>
-                </td>
-                <td className="py-3 font-medium text-primary">
-                  {listing.price}
-                </td>
-                <td className="py-3 text-slate-600">{listing.stock}</td>
-                <td className="py-3">
-                  <StatusBadge status={listing.status} />
-                </td>
-                <td className="py-3">
-                  <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
-                      <SquarePen className="h-3.5 w-3.5" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() =>
-                        navigate(`/add-listing?produce_id=${listing.produce.id}`)
-                      }
-                      className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
-                    >
-                      <UserPlus className="h-3.5 w-3.5" />
-                      Add Farmer
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <Pagination
           page={page}

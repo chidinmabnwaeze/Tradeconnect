@@ -13,16 +13,19 @@ import Avatar from "../components/Avatar";
 import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
 import { type Order } from "../lib/types/order";
-import { getAllOrders, getOrder } from "../lib/services/orders.service";
+import { getAllOrders } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
-import { formatDate } from "../lib/format"; 
+import { formatDate } from "../lib/format";
+import { useSearchParams } from "react-router-dom";
 
 export default function Orders() {
   const [page, setPage] = useState(1);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [selected, setSelected] = useState<Order | null>(orders[0] ?? null);
+  const [selected, setSelected] = useState<Order | null>(null);
   const PAGE_SIZE = 10;
   const pageCount = Math.ceil(orders.length / PAGE_SIZE) || 1;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedOrderNumber = searchParams.get("order");
 
   const steps = [
     {
@@ -66,29 +69,29 @@ export default function Orders() {
       try {
         const response = await getAllOrders({ page });
         setOrders(response.data);
-        if (response.data.length > 0) {
-          setSelected(response.data[0]);
+
+        const activeOrder =
+          selectedOrderNumber !== null
+            ? (response.data.find(
+                (order) => order.order_number === selectedOrderNumber,
+              ) ?? response.data[0])
+            : response.data[0];
+
+        setSelected(activeOrder ?? null);
+
+        if (activeOrder && activeOrder.order_number !== selectedOrderNumber) {
+          setSearchParams(
+            { order: activeOrder.order_number },
+            { replace: true },
+          );
         }
       } catch (error) {
         getErrorMessage(error);
       }
     };
-    getOrders();
-  }, [page]);
 
-  useEffect(() => {
-    const getOrderItem = async (id: number) => {
-      try {
-        const response = await getOrder(id);
-        id = response.id;
-        setSelected(response);
-        console.log("single order item", response);
-      } catch (error) {
-        getErrorMessage(error);
-      }
-      getOrderItem(selected?.id ?? 1);
-    };
-  }, []);
+    getOrders();
+  }, [page, selectedOrderNumber, setSearchParams]);
 
   return (
     <Layout breadcrumb="Orders / All orders" compact>
@@ -218,14 +221,20 @@ export default function Orders() {
               <th className="pb-3 font-medium">Buyer</th>
               <th className="pb-3 font-medium">Qty</th>
               <th className="pb-3 font-medium">Total</th>
-              <th className="pb-3 font-medium">Status</th>
+              <th className="pb-3 font-medium">Payment Status</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((order) => (
               <tr
                 key={order.id}
-                onClick={() => setSelected(order)}
+                onClick={() => {
+                  setSelected(order);
+                  setSearchParams(
+                    { order: order.order_number },
+                    { replace: true },
+                  );
+                }}
                 className={`cursor-pointer border-t border-slate-100 ${
                   selected?.id === order.id
                     ? "bg-global-bg"
@@ -272,7 +281,7 @@ export default function Orders() {
                 </td>
                 <td className="py-3 text-slate-600">{order.total}</td>
                 <td className="py-3">
-                  <StatusBadge status={order.status} />
+                  <StatusBadge status={order.payment_status} />
                 </td>
               </tr>
             ))}
