@@ -143,7 +143,7 @@ export default function Listings() {
                   </td>
                   <td className="px-3 py-4 text-right">
                     <div className="flex items-center justify-end gap-4">
-                      <button className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+                      <button onClick={()=>navigate(`/listings/${listing.id}/edit`)} className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
                         <SquarePen className="h-3.5 w-3.5" />
                         Edit
                       </button>

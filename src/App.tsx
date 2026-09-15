@@ -22,6 +22,7 @@ import BuyerDisputes from "./Buyers/Disputes";
 import BuyerSettings from "./Buyers/Settings";
 import Checkout from "./Buyers/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import EditListing from "./Admin/EditListing";
 
 function App() {
   return (
@@ -71,6 +72,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AddListing />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/listings/:id/edit"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <EditListing />
               </ProtectedRoute>
             }
           />
