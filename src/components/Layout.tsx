@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Avatar from "./Avatar";
 import Logout from "./Logout";
+import whiteLogo from "../assets/TradeConnnect1-04.png";
 import { getCurrentUser } from "../lib/services/auth.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import type { AuthUser } from "../lib/types/auth";
@@ -89,7 +90,7 @@ export default function Layout({
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 pt-6 pb-8">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white">
-            <LayoutGrid className="h-5 w-5" />
+            <img src={whiteLogo} alt="TradeConnect" className="h-10 w-auto" />
           </div>
           <div>
             <p className="text-xs font-medium text-white/60">TradeConnect</p>

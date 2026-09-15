@@ -12,8 +12,8 @@ import Layout from "../components/Layout";
 import Avatar from "../components/Avatar";
 import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
-import { type Order } from "../lib/types/order";
-import { getAllOrders } from "../lib/services/orders.service";
+import { type AdminOrderStatusUpdate, type Order } from "../lib/types/order";
+import { getAllOrders, updateOrderStatus } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { formatDate } from "../lib/format";
 import { useSearchParams } from "react-router-dom";
@@ -22,10 +22,28 @@ export default function Orders() {
   const [page, setPage] = useState(1);
   const [orders, setOrders] = useState<Order[]>([]);
   const [selected, setSelected] = useState<Order | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
   const PAGE_SIZE = 10;
   const pageCount = Math.ceil(orders.length / PAGE_SIZE) || 1;
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedOrderNumber = searchParams.get("order");
+
+  const handleUpdateStatus = async (status: AdminOrderStatusUpdate) => {
+    if (!selected || updatingStatus) return;
+
+    setUpdatingStatus(true);
+    try {
+      const updated = await updateOrderStatus(selected.id, status);
+      setSelected(updated);
+      setOrders((prev) =>
+        prev.map((order) => (order.id === updated.id ? updated : order)),
+      );
+    } catch (error) {
+      getErrorMessage(error);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   const steps = [
     {
@@ -40,7 +58,7 @@ export default function Orders() {
     },
     {
       label: "Processing",
-      date: formatDate(selected?.confirmed_at ?? "-"),
+      date: formatDate(selected?.processing_at ?? "-"),
       icon: Clock,
     },
     {
@@ -96,13 +114,48 @@ export default function Orders() {
   return (
     <Layout breadcrumb="Orders / All orders" compact>
       <div className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-slate-900">
-            Order Summary
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Click on any order to preview
-          </p>
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">
+              Order Summary
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Click on any order to preview
+            </p>
+          </div>
+          {selected && (
+            <div className="flex items-center gap-3">
+              <StatusBadge status={selected.status} />
+              {selected.status === "new" && (
+                <button
+                  onClick={() => handleUpdateStatus("in_transit")}
+                  disabled={updatingStatus}
+                  className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {updatingStatus ? "Processing…" : "Process order"}
+                </button>
+              )}
+              {selected.status === "in_transit" && (
+                <button
+                  onClick={() => handleUpdateStatus("delivered")}
+                  disabled={updatingStatus}
+                  className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {updatingStatus ? "Updating…" : "Mark as delivered"}
+                </button>
+              )}
+              {(selected.status === "new" ||
+                selected.status === "in_transit") && (
+                <button
+                  onClick={() => handleUpdateStatus("cancelled")}
+                  disabled={updatingStatus}
+                  className="rounded-2xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cancel order
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between gap-6 rounded-3xl border border-slate-100 bg-global-bg p-6">
@@ -221,6 +274,7 @@ export default function Orders() {
               <th className="pb-3 font-medium">Buyer</th>
               <th className="pb-3 font-medium">Qty</th>
               <th className="pb-3 font-medium">Total</th>
+              <th className="pb-3 font-medium">Status</th>
               <th className="pb-3 font-medium">Payment Status</th>
             </tr>
           </thead>
@@ -280,6 +334,9 @@ export default function Orders() {
                   {order.quantity} {order.items?.[0]?.unit}
                 </td>
                 <td className="py-3 text-slate-600">{order.total}</td>
+                <td className="py-3">
+                  <StatusBadge status={order.status} />
+                </td>
                 <td className="py-3">
                   <StatusBadge status={order.payment_status} />
                 </td>

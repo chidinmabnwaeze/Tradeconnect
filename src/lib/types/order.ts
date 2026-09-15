@@ -95,8 +95,6 @@ export interface CreateOrderItemPayload {
 // Modern multi-item contract.
 export interface CreateOrderPayload {
   items: CreateOrderItemPayload[];
-  // listing_id: number;
-  // quantity: number;
   delivery_method: DeliveryMethod;
   delivery_name: string;
   delivery_phone: string;

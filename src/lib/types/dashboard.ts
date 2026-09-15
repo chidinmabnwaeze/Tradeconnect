@@ -1,14 +1,29 @@
-// The order-action-queue item shape isn't given a literal example in the API
-// doc (only "includes only non-terminal new and in_transit orders"); this is
-// a best-effort shape inferred from the Order resource — verify against a
-// real response before relying on fields beyond id/order_number/status.
+import type { OrderStatus, PaymentStatus } from "./order";
+
+export interface OrderActionQueueAction {
+  key: string;
+  label: string;
+  next_status: OrderStatus;
+  can_cancel: boolean;
+  update_url: string;
+}
+
 export interface OrderActionQueueItem {
   id: number;
   order_number: string;
-  status: string;
+  status: OrderStatus;
+  payment_status: PaymentStatus;
+  is_paid: boolean;
   total: string;
-  buyer_name?: string;
+  buyer: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  items_count: number;
+  action: OrderActionQueueAction;
   placed_at: string;
+  detail_url: string;
 }
 
 export interface DashboardComparison {
@@ -29,7 +44,6 @@ export interface DashboardStats {
   pending_farmer_verifications: number;
   active_buyers: number;
   buyers_change_percent: number;
-  // Legacy meaning retained — all buyer/user-role accounts, not just active ones.
   active_users: number;
   new_buyers_this_week: number;
   comparison: DashboardComparison;

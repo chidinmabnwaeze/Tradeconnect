@@ -415,6 +415,58 @@ const AddListing = () => {
         </div>
       </section>
 
+      <section className="bg-white p-6 rounded-lg mt-6">
+        <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
+          <h1 className="text-xl font-bold">Delivery Pricing</h1>
+          <p className="text-gray-400 font-medium">
+           The cumulative delivery cost of buyer order.
+          </p>
+        </div>
+        <div className="flex justify-between gap-2 mb-4">
+          <div className="flex flex-col gap-2 w-full">
+            <label className="font-medium">Price per unit</label>
+            <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
+              <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
+                N
+              </span>
+              <input
+                type="number"
+                placeholder="e.g. 5000"
+                className="w-full py-2 px-3 focus:outline-none rounded-sm"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+              <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
+                /kg
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 w-full">
+            <label className="font-medium">Buyer Stock</label>
+            <input
+              type="number"
+              placeholder="e.g. 10"
+              className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+            />
+            <p className="text-gray-400 text-sm">
+              In the same unit selected above
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 mb-4 w-2/5">
+          <label className="font-medium">Total Delivery Cost</label>
+          <input
+            type="number"
+            placeholder="e.g. 5"
+            className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+            value={minOrderQty}
+            onChange={(e) => setMinOrderQty(e.target.value)}
+          />
+        </div>
+      </section>
+
       {!selectedProduceId && (
         <section className="bg-white p-6 rounded-lg mt-6">
           <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">

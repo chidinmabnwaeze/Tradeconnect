@@ -28,6 +28,7 @@ import {
   getNotifications,
   getRecentActivities,
 } from "../lib/services/dashboard.service";
+import { updateOrderStatus } from "../lib/services/orders.service";
 import { getCurrentUser } from "../lib/services/auth.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { formatDate, formatDays } from "../lib/format";
@@ -88,7 +89,42 @@ const Dashboard = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [processingOrderId, setProcessingOrderId] = useState<number | null>(
+    null,
+  );
   const navigate = useNavigate();
+
+  const handleProcessOrder = async (
+    e: React.MouseEvent,
+    order: NonNullable<DashboardStats["order_action_queue"]>[number],
+  ) => {
+    e.stopPropagation();
+    if (processingOrderId !== null) return;
+    if (order.action.next_status === "new") return;
+
+    setProcessingOrderId(order.id);
+    try {
+      await updateOrderStatus(order.id, order.action.next_status);
+      setDashboardData((prev) =>
+        prev
+          ? {
+              ...prev,
+              order_action_queue: prev.order_action_queue.filter(
+                (item) => item.id !== order.id,
+              ),
+              order_action_queue_count: Math.max(
+                0,
+                prev.order_action_queue_count - 1,
+              ),
+            }
+          : prev,
+      );
+    } catch (error) {
+      getErrorMessage(error);
+    } finally {
+      setProcessingOrderId(null);
+    }
+  };
 
   const stats = [
     {
@@ -378,8 +414,14 @@ const Dashboard = () => {
                         {formatDays(order.placed_at)}
                       </p>
                     </div>
-                    <button className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90">
-                      {order.action.label}
+                    <button
+                      onClick={(e) => handleProcessOrder(e, order)}
+                      disabled={processingOrderId === order.id}
+                      className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {processingOrderId === order.id
+                        ? "Processing…"
+                        : order.action.label || "View order"}
                     </button>
                   </div>
                 ))}
