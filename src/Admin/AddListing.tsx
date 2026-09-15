@@ -249,8 +249,8 @@ const AddListing = () => {
             ))}
           </select>
           <p className="text-gray-400 text-sm">
-            Pick an existing produce so another farmer can sell it too, or
-            leave this on "+ Add a new produce" to create one.
+            Pick an existing produce so another farmer can sell it too, or leave
+            this on "+ Add a new produce" to create one.
           </p>
         </div>
         {!selectedProduceId && (
@@ -419,7 +419,7 @@ const AddListing = () => {
         <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
           <h1 className="text-xl font-bold">Delivery Pricing</h1>
           <p className="text-gray-400 font-medium">
-           The cumulative delivery cost of buyer order.
+            The cumulative delivery cost of buyer order.
           </p>
         </div>
         <div className="flex justify-between gap-2 mb-4">
@@ -472,8 +472,8 @@ const AddListing = () => {
           <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
             <h1 className="text-xl font-bold">Produce Image</h1>
             <p className="text-gray-400 font-medium">
-              This is the image that will be displayed to buyers when they
-              view this produce
+              This is the image that will be displayed to buyers when they view
+              this produce
             </p>
           </div>
           <div className="flex flex-col justify-between gap-2 mb-4 border p-20 border-dashed border-gray-400 items-center rounded-md">
