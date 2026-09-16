@@ -206,7 +206,7 @@ const Dashboard = () => {
     const getAllNotifications = async () => {
       try {
         const response = await getNotifications({ status: "unread", per_page: 10 });
-        setNotifications(response)
+        setNotifications(response.data || [])
         console.log("Notifications fetched successfully:", response);
       } catch (err) {
         getErrorMessage(err);
@@ -526,7 +526,7 @@ const Dashboard = () => {
                       className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4"
                     >
                       <div
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${n.color}`}
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${n.entity}`}
                       >
                         {/* <Icon className="h-4 w-4" /> */}
                       </div>

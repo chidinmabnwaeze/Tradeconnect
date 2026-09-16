@@ -180,7 +180,7 @@ const AddListing = () => {
   };
 
   return (
-    <Layout>
+    <Layout breadcrumb="Listings / Add Listing" compact>
       <Link to="/listings">
         <button className="flex text-sm items-center gap-2 text-gray-600 hover:text-white">
           <ArrowLeftIcon />
