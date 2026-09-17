@@ -9,14 +9,10 @@ import { getActiveListings } from "../lib/services/listings.service";
 import { type Listing } from "../lib/types/listing";
 import { getPublicCategories } from "../lib/services/categories.service";
 import { toast, ToastContainer } from "react-toastify";
+import type { MarketplaceSummary } from "../lib/types/marketplace";
+import { getMarketplaceSummary } from "../lib/services/marketplace.service";
 
 const ALL_PRODUCE = "All Produce";
-
-const metrics = [
-  { label: "Listings", value: "240+" },
-  { label: "Farmers", value: "80" },
-  { label: "LGAs", value: "18" },
-];
 
 const cardBg = [
   "bg-rose-50",
@@ -30,12 +26,30 @@ const cardBg = [
 export const Marketplace = () => {
   const [activeCategory, setActiveCategory] = useState(ALL_PRODUCE);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [metrics, setmetrics] = useState<MarketplaceSummary | null>(null);
   // null = the dedicated /categories endpoint hasn't returned yet (or isn't
   // deployed on this backend) — falls back to categories derived from the
   // loaded listings below.
   const [apiCategories, setApiCategories] = useState<Category[] | null>(null);
   const { items: cartItems, addItem } = useCart();
   const [loading, setLoading] = useState(true);
+
+  const marketplaceMetrics = [
+    { label: "Listings", value: `${metrics?.listings ?? 0}` },
+    { label: "Farmers", value: `${metrics?.farmers ?? 0}+` },
+    { label: "LGAs", value: `${metrics?.lgas ?? 0}+` },
+  ];
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const response = await getMarketplaceSummary();
+        setmetrics(response);
+      } catch (error) {
+        getErrorMessage(error);
+      }
+    };
+    fetchMetrics();
+  }, []);
 
   const derivedCategories = useMemo(() => {
     const byId = new Map<number, Category>();
@@ -106,7 +120,7 @@ export const Marketplace = () => {
 
   return (
     <BuyerLayout breadcrumb="Marketplace / Overview">
-    <ToastContainer/>
+      <ToastContainer />
       <main className="pb-6">
         <section className="banner-primary flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
@@ -122,7 +136,7 @@ export const Marketplace = () => {
             </p>
           </div>
           <div className="flex items-center gap-8">
-            {metrics.map((metric) => (
+            {marketplaceMetrics?.map((metric) => (
               <div key={metric.label} className="text-center text-white">
                 <p className="text-2xl font-bold">{metric.value}</p>
                 <p className="text-sm text-gray-300">{metric.label}</p>

@@ -56,6 +56,7 @@ const AddListing = () => {
   const [harvestDate, setHarvestDate] = useState("");
   const [produceLabel, setProduceLabel] = useState("");
   const [minOrderQty, setMinOrderQty] = useState("");
+  const [deliveryFee, setDeliveryFee] = useState("");
 
   // Farmers: loaded from the API, filtered client-side by the search box
   const [farmers, setFarmers] = useState<Farmer[]>([]);
@@ -169,8 +170,15 @@ const AddListing = () => {
         publication_status: status === "active" ? "live" : "pending",
         minimum_order_quantity: minOrderQty ? Number(minOrderQty) : undefined,
         available_from: harvestDate || undefined,
+        delivery_fee_per_unit: deliveryFee ? Number(deliveryFee) : undefined,
       });
-      console.log("Listing created successfully");
+      console.log("Listing created successfully", {
+        produceId,
+        farmerId: selectedFarmerId,
+        price: Number(price),
+        stock: Number(stock),
+        deliveryFee: deliveryFee ? Number(deliveryFee) : undefined
+      });
       navigate("/listings");
     } catch (err) {
       setError(getErrorMessage(err));
@@ -265,38 +273,42 @@ const AddListing = () => {
                 onChange={(e) => setProduceName(e.target.value)}
               />
             </div>
-            <div className="flex flex-col gap-2 mb-4 w-1/2">
-              <label className="font-medium">Category</label>
-              <select
-                value={categoryId}
-                onChange={(e) =>
-                  setCategoryId(e.target.value ? Number(e.target.value) : "")
-                }
-                className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-              >
-                <option value="">
-                  {categoriesLoading
-                    ? "Loading categories..."
-                    : "Select category"}
-                </option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
+
+            <div className="flex justify-between items-center gap-4">
+              <div className="flex flex-col gap-2 mb-4 w-1/2">
+                <label className="font-medium">Category</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) =>
+                    setCategoryId(e.target.value ? Number(e.target.value) : "")
+                  }
+                  className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+                >
+                  <option value="" className="text-sm text-gray">
+                    {categoriesLoading
+                      ? "Loading categories..."
+                      : "Select category"}
                   </option>
-                ))}
-              </select>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2 mb-4 w-1/2">
+                <label className="font-medium">Harvest/ Available Date</label>
+                <input
+                  type="date"
+                  className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+                  value={harvestDate}
+                  onChange={(e) => setHarvestDate(e.target.value)}
+                />
+              </div>
             </div>
           </>
         )}
-        <div className="flex flex-col gap-2 mb-4 w-1/2">
-          <label className="font-medium">Harvest/ Available Date</label>
-          <input
-            type="date"
-            className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-            value={harvestDate}
-            onChange={(e) => setHarvestDate(e.target.value)}
-          />
-        </div>
         <div className="flex flex-col gap-2 mb-4 w-2/5">
           <label className="font-medium">Produce Label</label>
           <select
@@ -433,15 +445,15 @@ const AddListing = () => {
                 type="number"
                 placeholder="e.g. 5000"
                 className="w-full py-2 px-3 focus:outline-none rounded-sm"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                value={deliveryFee}
+                onChange={(e) => setDeliveryFee(e.target.value)}
               />
-              <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
+              {/* <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
                 /kg
-              </span>
+              </span> */}
             </div>
           </div>
-          <div className="flex flex-col gap-2 w-full">
+          {/* <div className="flex flex-col gap-2 w-full">
             <label className="font-medium">Buyer Stock</label>
             <input
               type="number"
@@ -453,18 +465,25 @@ const AddListing = () => {
             <p className="text-gray-400 text-sm">
               In the same unit selected above
             </p>
-          </div>
+          </div> */}
         </div>
-        <div className="flex flex-col gap-2 mb-4 w-2/5">
+        {/* <div className="flex flex-col gap-2 mb-4 w-2/5">
           <label className="font-medium">Total Delivery Cost</label>
-          <input
-            type="number"
-            placeholder="e.g. 5"
-            className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-            value={minOrderQty}
-            onChange={(e) => setMinOrderQty(e.target.value)}
-          />
-        </div>
+          <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
+            <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
+              N
+            </span>
+            <input
+              type="number"
+              placeholder="e.g. 5000"
+              className="w-full py-2 px-3 focus:outline-none rounded-sm"
+              value={total}   
+            />
+            <p className="text-gray-400 text-sm">
+              Total delivery cost derived from the price per unit and stock quantity.
+            </p>
+          </div>
+        </div> */}
       </section>
 
       {!selectedProduceId && (

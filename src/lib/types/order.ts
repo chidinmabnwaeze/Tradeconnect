@@ -44,6 +44,8 @@ export interface OrderItem {
   unit_price: string;
   discount_amount: string;
   line_total: string;
+  delivery_fee_per_unit: number;
+  delivery_total: number;
 }
 
 export interface OrderTimelineEvent {

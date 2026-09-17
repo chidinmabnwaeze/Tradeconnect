@@ -28,6 +28,7 @@ export interface Listing {
   discount_amount?: string | null;
   unit?: string | null;
   stock: number;
+  delivery_fee_per_unit?: number | null;
   minimum_order_quantity?: number;
   description?: string | null;
   label?: ListingLabel | null;
@@ -52,6 +53,7 @@ export interface ListingPayload {
   discount_percent?: number | null;
   unit?: string | null;
   stock: number;
+  delivery_fee_per_unit?: number | null;
   minimum_order_quantity?: number;
   description?: string | null;
   label?: ListingLabel | null;

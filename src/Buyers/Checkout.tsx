@@ -50,6 +50,7 @@ export default function Checkout() {
         items: items.map((item) => ({
           listing_id: item.listing_id,
           quantity: item.quantity,
+          delivery_fee_per_unit: item.delivery_fee_per_unit,
         })),
         delivery_method: form.delivery_method,
         delivery_name: form.delivery_name,
@@ -247,7 +248,7 @@ export default function Checkout() {
                   Delivered in 2-4 business days, straight to your doorstep.
                 </p>
                 <p className="mt-1 text-xs font-semibold text-primary">
-                  {formatNaira(1500)}
+                  {formatNaira(items.reduce((sum, item) => sum + item.delivery_fee_per_unit * item.quantity, 0))}
                 </p>
               </div>
             </button>

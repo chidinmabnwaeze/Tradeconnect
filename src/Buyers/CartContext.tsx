@@ -10,9 +10,8 @@ export interface CartItem extends CreateOrderItemPayload {
   unit: string;
   price: number;
   image: string | null;
-  // Snapshot of the listing's available stock at add-time, used to clamp
-  // quantity client-side. The backend is still the source of truth at checkout.
   stock: number;
+  delivery_fee_per_unit: number;
 }
 
 interface CartContextValue {
@@ -26,8 +25,6 @@ interface CartContextValue {
   deliveryFee: number;
   total: number;
 }
-
-const DELIVERY_FEE = 1500;
 
 const CartContext = createContext<CartContextValue | null>(null);
 
@@ -57,6 +54,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           price: Number(listing.price),
           image: listing.primary_image_url ?? listing.produce.image_url,
           stock: listing.stock,
+          delivery_fee_per_unit: listing.delivery_fee_per_unit ?? 0,
         },
       ];
     });
@@ -87,7 +85,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     () => items.reduce((sum, item) => sum + item.quantity * item.price, 0),
     [items],
   );
-  const deliveryFee = items.length > 0 ? DELIVERY_FEE : 0;
+  const deliveryFee = useMemo(
+    () => items.reduce((sum, item) => sum + item.delivery_fee_per_unit * item.quantity, 0),
+    [items],
+  );
   const total = subtotal + deliveryFee;
 
   return (

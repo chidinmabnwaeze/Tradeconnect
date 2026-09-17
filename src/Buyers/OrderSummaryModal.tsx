@@ -15,6 +15,17 @@ export default function OrderSummaryModal({
 
   if (!open) return null;
 
+   // const calculateTotalDeliveryCost = () => {
+  //   const pricePerUnit = parseFloat(deliveryFee);
+  //   const stockQuantity = parseFloat(stock);
+
+  //   if (isNaN(pricePerUnit) || isNaN(stockQuantity)) {
+  //     return 0;
+  //   }
+  //   return pricePerUnit * stockQuantity;
+  // };
+  // const total = calculateTotalDeliveryCost();
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />

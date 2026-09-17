@@ -15,6 +15,8 @@ import { getErrorMessage } from "../lib/getErrorMessage";
 import type { AuthUser } from "../lib/types/auth";
 import { useCart } from "../Buyers/CartContext";
 import CartDrawer from "../Buyers/CartDrawer";
+import Logout from "./Logout";
+import whiteLogo from "../assets/TradeConnnect1-04.png";
 
 interface NavItem {
   label: string;
@@ -59,7 +61,7 @@ export default function BuyerLayout({
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 pt-6 pb-8">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white">
-            <LayoutGrid className="h-5 w-5" />
+            <img src={whiteLogo} alt="TradeConnect" className="h-10 w-auto" />
           </div>
           <div>
             <p className="text-xs font-medium text-white/60">TradeConnect</p>
@@ -94,22 +96,17 @@ export default function BuyerLayout({
         <div className="mt-auto border-t border-white/10 px-4 py-4">
           <Link
             to="/marketplace/settings"
-            className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+            className={`flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium hover:text-white transition ${
               location.pathname === "/marketplace/settings"
                 ? "bg-white/10 text-white"
                 : "text-white/50 hover:bg-white/10 hover:text-white"
             }`}
           >
+            <span>Settings</span>
             <Settings className="h-4 w-4" />
-            Settings
           </Link>
-          <Link
-            to="/login"
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-white/50 hover:bg-white/10 hover:text-white transition"
-          >
-            <LogOut className="h-4 w-4" />
-            Log Out
-          </Link>
+
+          <Logout />
         </div>
       </aside>
 

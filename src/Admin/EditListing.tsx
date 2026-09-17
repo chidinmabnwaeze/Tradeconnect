@@ -8,7 +8,11 @@ import { getListing, updateListing } from "../lib/services/listings.service";
 import { updateProduce } from "../lib/services/produce.service";
 import { getFarmers } from "../lib/services/farmers.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
-import type { Listing, ListingPayload, ListingStatus } from "../lib/types/listing";
+import type {
+  Listing,
+  ListingPayload,
+  ListingStatus,
+} from "../lib/types/listing";
 import type { Farmer, FarmerSummary } from "../lib/types/farmer";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -26,7 +30,8 @@ const EditListing = () => {
   const [stock, setStock] = useState("");
   const [minOrderQty, setMinOrderQty] = useState("");
   const [status, setStatus] = useState<ListingStatus>("active");
-
+  const [deliveryFee, setDeliveryFee] = useState("");
+  const [total, setTotal] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const imagePreviewUrl = useMemo(
     () => (image ? URL.createObjectURL(image) : null),
@@ -59,6 +64,12 @@ const EditListing = () => {
             : "",
         );
         setStatus(response.status);
+        setDeliveryFee(
+          response.delivery_fee_per_unit
+            ? String(response.delivery_fee_per_unit)
+            : "",
+        );
+        console.log("Loaded listing:", response);
       } catch (err) {
         setError(getErrorMessage(err));
       } finally {
@@ -66,7 +77,7 @@ const EditListing = () => {
       }
     };
     loadListing();
-  }, [id]);
+  }, [id]); 
 
   useEffect(() => {
     if (!imagePreviewUrl) return;
@@ -135,6 +146,7 @@ const EditListing = () => {
         price: Number(price),
         stock: Number(stock),
         minimum_order_quantity: minOrderQty ? Number(minOrderQty) : undefined,
+        delivery_fee_per_unit: deliveryFee ? Number(deliveryFee) : undefined,
         status,
         publication_status: status === "active" ? "live" : "pending",
       };
@@ -279,9 +291,7 @@ const EditListing = () => {
                 />
                 <div className="mt-3 flex max-h-64 flex-col gap-2 overflow-y-auto">
                   {farmersLoading && (
-                    <p className="text-sm text-gray-400">
-                      Loading farmers...
-                    </p>
+                    <p className="text-sm text-gray-400">Loading farmers...</p>
                   )}
                   {!farmersLoading && filteredFarmers.length === 0 && (
                     <p className="text-sm text-gray-400">No farmers found.</p>
@@ -365,6 +375,67 @@ const EditListing = () => {
                 onChange={(e) => setMinOrderQty(e.target.value)}
               />
             </div>
+          </section>
+
+          <section className="bg-white p-6 rounded-lg mt-6">
+            <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
+              <h1 className="text-xl font-bold">Delivery Pricing</h1>
+              <p className="text-gray-400 font-medium">
+                The cumulative delivery cost of buyer order.
+              </p>
+            </div>
+            <div className="flex justify-between gap-2 mb-4">
+              <div className="flex flex-col gap-2 w-full">
+                <label className="font-medium">Price per unit</label>
+                <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
+                  <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
+                    N
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="e.g. 5000"
+                    className="w-full py-2 px-3 focus:outline-none rounded-sm"
+                    value={deliveryFee}
+                    onChange={(e) => setDeliveryFee(e.target.value)}
+                  />
+                  {/* <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
+                    /kg
+                  </span> */}
+                </div>
+              </div>
+              {/* <div className="flex flex-col gap-2 w-full">
+                <label className="font-medium">Buyer Stock</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 10"
+                  className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                />
+                <p className="text-gray-400 text-sm">
+                  In the same unit selected above
+                </p>
+              </div> */}
+            </div>
+            <p className="text-gray-400 text-sm">
+              Total delivery cost will be derived from the price per unit and
+              order quantity.
+            </p>
+            {/* <div className="flex flex-col gap-2 mb-4 w-2/5">
+              <label className="font-medium">Total Delivery Cost</label>
+              <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
+                <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
+                  N
+                </span>
+                <input
+                  type="number"
+                  placeholder="e.g. 5000"
+                  className="w-full py-2 px-3 focus:outline-none rounded-sm"
+                  value={total}
+                  onChange={(e) => setTotal(e.target.value)}
+                />
+              </div>
+            </div> */}
           </section>
 
           <section className="bg-white p-6 rounded-lg mt-6">
