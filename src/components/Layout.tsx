@@ -12,7 +12,7 @@ import {
   Package,
   Settings,
   Users,
-  Menu
+  Menu,
 } from "lucide-react";
 import Avatar from "./Avatar";
 import Logout from "./Logout";
@@ -92,8 +92,22 @@ export default function Layout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-global-bg gap-4 p-4">
-      {/* Sidebar — fixed width, full height */}
-      <aside className="flex w-[272px] shrink-0 flex-col rounded-3xl bg-primary shadow-sm overflow-hidden">
+      <button
+        onClick={() => setOpenSidebar(true)}
+        className="fixed left-5 top-5 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg md:hidden"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {openSidebar && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setOpenSidebar(false)}
+        ></div>
+      )}
+
+      {/* Sidebar */}
+      <aside className={`flex w-68 shrink-0 flex-col rounded-3xl bg-primary shadow-sm overflow-hidden`}>
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 pt-6 pb-8">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white">
@@ -108,8 +122,14 @@ export default function Layout({
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-4 space-y-1" onClick={handleToggle}>
-          <Menu onClick={handleToggle} className={`${openSidebar ? "" : "hidden sm:"}`}/>
+        <nav
+          className="flex-1 overflow-y-auto px-4 space-y-1"
+          onClick={handleToggle}
+        >
+          <Menu
+            onClick={handleToggle}
+            className={`${openSidebar ? "" : "hidden sm:"}`}
+          />
           {navItems.map((item) => {
             const Icon = item.icon;
 
