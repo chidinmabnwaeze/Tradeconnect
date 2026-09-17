@@ -12,6 +12,7 @@ import {
   Package,
   Settings,
   Users,
+  Menu
 } from "lucide-react";
 import Avatar from "./Avatar";
 import Logout from "./Logout";
@@ -64,6 +65,7 @@ export default function Layout({
     location.pathname.startsWith("/users") || location.pathname === "/buyers";
   const [usersOpen, setUsersOpen] = useState(usersSectionActive);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [openSidebar, setOpenSidebar] = useState(false);
   const getCurrentDate = () => {
     const date = Intl.DateTimeFormat("en-US", { dateStyle: "full" }).format(
       new Date(),
@@ -83,6 +85,11 @@ export default function Layout({
     getUser();
   }, []);
 
+  const handleToggle = () => {
+    setOpenSidebar((prev) => !prev);
+    return;
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-global-bg gap-4 p-4">
       {/* Sidebar — fixed width, full height */}
@@ -101,7 +108,8 @@ export default function Layout({
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto px-4 space-y-1" onClick={handleToggle}>
+          <Menu onClick={handleToggle} className={`${openSidebar ? "" : "hidden sm:"}`}/>
           {navItems.map((item) => {
             const Icon = item.icon;
 

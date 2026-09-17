@@ -15,23 +15,14 @@ export default function OrderSummaryModal({
 
   if (!open) return null;
 
-   // const calculateTotalDeliveryCost = () => {
-  //   const pricePerUnit = parseFloat(deliveryFee);
-  //   const stockQuantity = parseFloat(stock);
-
-  //   if (isNaN(pricePerUnit) || isNaN(stockQuantity)) {
-  //     return 0;
-  //   }
-  //   return pricePerUnit * stockQuantity;
-  // };
-  // const total = calculateTotalDeliveryCost();
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Order Summary</h2>
+          <h2 className="text-lg font-semibold text-slate-900">
+            Order Summary
+          </h2>
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
@@ -55,7 +46,9 @@ export default function OrderSummaryModal({
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-slate-900">{item.produce_name}</p>
+                <p className="truncate text-sm font-medium text-slate-900">
+                  {item.produce_name}
+                </p>
                 <p className="text-xs text-slate-400">{item.category_name}</p>
               </div>
               <p className="text-xs text-slate-500">
@@ -75,7 +68,12 @@ export default function OrderSummaryModal({
             <p>{formatNaira(subtotal)}</p>
           </div>
           <div className="flex items-center justify-between text-slate-500">
-            <p>Delivery fee</p>
+            <p>
+              Delivery fee{" "}
+              <span className="text-xs">
+                (Quantity influences total delivery fee)
+              </span>
+            </p>
             <p>{formatNaira(deliveryFee)}</p>
           </div>
           <div className="flex items-center justify-between pt-1 text-base font-bold text-slate-900">
@@ -87,7 +85,8 @@ export default function OrderSummaryModal({
         <div className="mt-4 flex items-start gap-2 rounded-2xl bg-emerald-50 p-3 text-xs text-emerald-700">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            You'll pay securely via Paystack. Your order is placed once payment is confirmed.
+            You'll pay securely via Paystack. Your order is placed once payment
+            is confirmed.
           </p>
         </div>
 
