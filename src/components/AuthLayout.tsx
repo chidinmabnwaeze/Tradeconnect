@@ -27,7 +27,7 @@ export default function AuthLayout({
           <p className="mb-4 text-xs font-semibold tracking-[0.2em] text-dash-brown">
             ADMIN CONSOLE
           </p>
-          <h1 className="max-w-md text-4xl font-bold leading-tight">
+          <h1 className="max-w-md text-4xl font-bold leading-tight transition animate-pulse fade transform translate-y-1 ">
             Every stall, trade and payout — in one place.
           </h1>
           <p className="mt-4 max-w-sm text-white/80">
