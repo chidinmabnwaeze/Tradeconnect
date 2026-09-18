@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Paperclip, Send, Plus, X } from "lucide-react";
+import { ArrowLeft, Paperclip, Send, Plus, X } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
 import StatusBadge from "../components/StatusBadge";
 import type { CreateDisputePayload, Dispute } from "../lib/types/dispute";
@@ -54,6 +54,12 @@ export default function Disputes() {
   // by navigating here from an order's "Open New Dispute" button (order is
   // already fixed).
   const [composing, setComposing] = useState(Boolean(navState?.orderId));
+  // Mobile-only: which pane is visible — list of disputes, or the open chat.
+  // Independent of `selected`/`composing` so auto-selecting the first dispute
+  // on load doesn't yank a mobile user straight into the chat view.
+  const [mobileView, setMobileView] = useState<"list" | "chat">(
+    navState?.orderId ? "chat" : "list",
+  );
   const [creating, setCreating] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [newDispute, setNewDispute] = useState({
@@ -233,7 +239,11 @@ export default function Disputes() {
         </div>
       )}
       <div className="grid gap-6 pb-10 lg:grid-cols-[340px_1fr] h-full">
-        <div className="rounded-4xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div
+          className={`rounded-4xl border border-slate-200 bg-white p-4 shadow-sm ${
+            mobileView === "chat" ? "hidden lg:block" : ""
+          }`}
+        >
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -250,6 +260,7 @@ export default function Disputes() {
                 attachments: [],
               });
               setComposing(true);
+              setMobileView("chat");
             }}
             className={`flex w-full justify-center items-center gap-3 rounded-2xl p-2 mt-4 text-center text-white  bg-primary hover:bg-slate-50 hover:text-primary border border-primary`}
           >
@@ -273,6 +284,7 @@ export default function Disputes() {
                 onClick={() => {
                   setComposing(false);
                   setSelectedId(dispute.id);
+                  setMobileView("chat");
                 }}
                 className={`flex w-full items-start gap-3 rounded-2xl p-3 text-left ${
                   !composing && dispute.id === selectedId
@@ -310,13 +322,28 @@ export default function Disputes() {
           </div>
         </div>
 
-        <div className="flex flex-col rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div
+          className={`flex-col rounded-4xl border border-slate-200 bg-white p-6 shadow-sm ${
+            mobileView === "list" ? "hidden lg:flex" : "flex"
+          }`}
+        >
           {composing && (
             <>
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <h2 className="font-medium text-slate-900">New Dispute</h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setMobileView("list")}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 lg:hidden"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                  <h2 className="font-medium text-slate-900">New Dispute</h2>
+                </div>
                 <button
-                  onClick={() => setComposing(false)}
+                  onClick={() => {
+                    setComposing(false);
+                    setMobileView("list");
+                  }}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
                 >
                   <X className="h-4 w-4" />
@@ -443,11 +470,19 @@ export default function Disputes() {
           {!composing && selected && (
             <>
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {selected.order.order_number}
-                  </p>
-                  <p className="text-xs text-slate-400">{selected.subject}</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setMobileView("list")}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 lg:hidden"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                  <div>
+                    <p className="font-medium text-slate-900">
+                      {selected.order.order_number}
+                    </p>
+                    <p className="text-xs text-slate-400">{selected.subject}</p>
+                  </div>
                 </div>
                 <StatusBadge status={selected.workflow_status} />
               </div>

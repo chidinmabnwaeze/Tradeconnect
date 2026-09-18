@@ -85,11 +85,6 @@ export default function Layout({
     getUser();
   }, []);
 
-  const handleToggle = () => {
-    setOpenSidebar((prev) => !prev);
-    return;
-  };
-
   return (
     <div className="flex h-screen overflow-hidden bg-global-bg gap-4 p-4">
       <button
@@ -107,7 +102,9 @@ export default function Layout({
       )}
 
       {/* Sidebar */}
-      <aside className={`flex w-68 shrink-0 flex-col rounded-3xl bg-primary shadow-sm overflow-hidden`}>
+      <aside
+        className={`fixed inset-y-4 left-4 z-50 flex w-68 flex-col rounded-3xl bg-primary shadow-sm overflow-hidden transition-transform duration-300 md:static md:z-auto md:translate-x-0 ${openSidebar ? "translate-x-0" : "translate-x-[-120%]"}`}
+      >
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 pt-6 pb-8">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white">
@@ -123,13 +120,7 @@ export default function Layout({
 
         {/* Nav */}
         <nav
-          className="flex-1 overflow-y-auto px-4 space-y-1"
-          onClick={handleToggle}
-        >
-          <Menu
-            onClick={handleToggle}
-            className={`${openSidebar ? "" : "hidden sm:"}`}
-          />
+          className="flex-1 overflow-y-auto px-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
 

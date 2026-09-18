@@ -37,11 +37,11 @@ export default function Buyers() {
   return (
     <Layout breadcrumb="Users / Buyers" compact>
       <div className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <input
             type="search"
             placeholder="Search buyers..."
-            className="w-[320px] rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none sm:w-80"
           />
           <button className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
             <Funnel className="h-4 w-4" />
@@ -49,7 +49,8 @@ export default function Buyers() {
           </button>
         </div>
 
-        <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-150 text-left text-sm">
           <thead>
             <tr className="text-slate-500">
               <th className="pb-3 font-medium">Buyer</th>
@@ -95,6 +96,7 @@ export default function Buyers() {
             ))}
           </tbody>
         </table>
+        </div>
 
         <Pagination
           page={page}

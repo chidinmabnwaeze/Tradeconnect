@@ -51,12 +51,12 @@ export default function Listings() {
           </div>
         ) : null}
 
-        <div className="my-6 flex items-center justify-between gap-4">
+        <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <input
             placeholder="Search listings..."
-            className="w-[320px] rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none sm:w-80"
           />
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
               <Funnel className="h-4 w-4" />
               Filter
@@ -128,9 +128,6 @@ export default function Listings() {
                     <p className="font-medium text-slate-900">
                       {listing.farmer.name}
                     </p>
-                    <p className="text-xs text-slate-400">
-                      {listing.farmer_id}
-                    </p>
                   </td>
                   <td className="px-3 py-4 pr-4 font-medium text-primary">
                     {listing.price}
@@ -143,7 +140,10 @@ export default function Listings() {
                   </td>
                   <td className="px-3 py-4 text-right">
                     <div className="flex items-center justify-end gap-4">
-                      <button onClick={()=>navigate(`/listings/${listing.id}/edit`)} className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+                      <button
+                        onClick={() => navigate(`/listings/${listing.id}/edit`)}
+                        className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+                      >
                         <SquarePen className="h-3.5 w-3.5" />
                         Edit
                       </button>

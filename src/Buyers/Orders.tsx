@@ -195,7 +195,8 @@ export default function Orders() {
                 <h3 className="mb-3 text-sm font-semibold text-slate-900">
                   Order Items
                 </h3>
-                <table className="w-full text-left text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-100 text-left text-sm">
                   <thead>
                     <tr className="text-slate-500">
                       <th className="pb-2 font-medium">Item</th>
@@ -231,6 +232,7 @@ export default function Orders() {
                     ))}
                   </tbody>
                 </table>
+                </div>
                 <div className="mt-3 space-y-1 border-t border-slate-100 pt-3 text-sm">
                   <div className="flex items-center justify-end gap-6">
                     <p className="text-slate-500">Subtotal</p>

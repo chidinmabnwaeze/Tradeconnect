@@ -13,7 +13,10 @@ import Avatar from "../components/Avatar";
 import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
 import { type AdminOrderStatusUpdate, type Order } from "../lib/types/order";
-import { getAllOrders, updateOrderStatus } from "../lib/services/orders.service";
+import {
+  getAllOrders,
+  updateOrderStatus,
+} from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { formatDate } from "../lib/format";
 import { useSearchParams } from "react-router-dom";
@@ -114,7 +117,7 @@ export default function Orders() {
   return (
     <Layout breadcrumb="Orders / All orders" compact>
       <div className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">
               Order Summary
@@ -124,7 +127,7 @@ export default function Orders() {
             </p>
           </div>
           {selected && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <StatusBadge status={selected.status} />
               {selected.status === "new" && (
                 <button
@@ -158,7 +161,7 @@ export default function Orders() {
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-6 rounded-3xl border border-slate-100 bg-global-bg p-6">
+        <div className="flex flex-wrap justify-between items-center gap-6 rounded-3xl border border-slate-100 bg-global-bg p-6">
           <div className="flex items-center gap-4">
             <Avatar name={selected?.buyer?.name ?? "Buyer"} size="md" />
             <div>
@@ -173,11 +176,7 @@ export default function Orders() {
             </div>
           </div>
 
-          <div className="text-sm">
-            <p className="font-semibold text-slate-900">{selected?.id}</p>
-          </div>
-
-          <div className="flex gap-8 text-sm">
+          <div className="flex flex-wrap gap-6 text-sm sm:gap-8">
             <div>
               <p className="text-slate-500">PRICE/KG</p>
               <p className="mt-1 font-semibold text-slate-900">
@@ -210,42 +209,44 @@ export default function Orders() {
           </div>
         </div>
 
-        <div className="mt-8 flex items-center justify-between px-4">
-          {steps.map((step, idx) => {
-            const Icon = step.icon;
-            const done = idx < activeStep;
-            return (
-              <div key={step.label} className="flex flex-1 items-center">
-                <div className="flex flex-col items-center text-center">
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-full ${
-                      done
-                        ? "bg-primary text-white"
-                        : "bg-slate-100 text-slate-400"
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
+        <div className="mt-8 overflow-x-auto">
+          <div className="flex min-w-150 items-center justify-between px-4">
+            {steps.map((step, idx) => {
+              const Icon = step.icon;
+              const done = idx < activeStep;
+              return (
+                <div key={step.label} className="flex flex-1 items-center">
+                  <div className="flex flex-col items-center text-center">
+                    <div
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                        done
+                          ? "bg-primary text-white"
+                          : "bg-slate-100 text-slate-400"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <p className="mt-2 text-xs font-medium text-slate-700 whitespace-nowrap">
+                      {step.label}
+                    </p>
+                    <p className="text-xs text-slate-400">{step.date}</p>
                   </div>
-                  <p className="mt-2 text-xs font-medium text-slate-700">
-                    {step.label}
-                  </p>
-                  <p className="text-xs text-slate-400">{step.date}</p>
+                  {idx < steps.length - 1 && (
+                    <div
+                      className={`mx-2 h-0.5 flex-1 ${
+                        idx < activeStep - 1 ? "bg-primary" : "bg-slate-200"
+                      }`}
+                    />
+                  )}
                 </div>
-                {idx < steps.length - 1 && (
-                  <div
-                    className={`mx-2 h-0.5 flex-1 ${
-                      idx < activeStep - 1 ? "bg-primary" : "bg-slate-200"
-                    }`}
-                  />
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
       <div className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">
               Order Lists
@@ -254,10 +255,10 @@ export default function Orders() {
               View all customers orders
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <input
               placeholder="Search orders..."
-              className="w-[260px] rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none"
+              className="w-full flex-1 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none sm:w-65 sm:flex-none"
             />
             <button className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
               <Funnel className="h-4 w-4" />
@@ -266,84 +267,86 @@ export default function Orders() {
           </div>
         </div>
 
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="text-slate-500">
-              <th className="pb-3 font-medium">Order</th>
-              <th className="pb-3 font-medium">Produce</th>
-              <th className="pb-3 font-medium">Buyer</th>
-              <th className="pb-3 font-medium">Qty</th>
-              <th className="pb-3 font-medium">Total</th>
-              <th className="pb-3 font-medium">Status</th>
-              <th className="pb-3 font-medium">Payment Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr
-                key={order.id}
-                onClick={() => {
-                  setSelected(order);
-                  setSearchParams(
-                    { order: order.order_number },
-                    { replace: true },
-                  );
-                }}
-                className={`cursor-pointer border-t border-slate-100 ${
-                  selected?.id === order.id
-                    ? "bg-global-bg"
-                    : "hover:bg-slate-50"
-                }`}
-              >
-                <td className="py-3">
-                  <p className="font-medium text-slate-900">
-                    {order.order_number}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {formatDate(`${order.placed_at}`)}
-                  </p>
-                </td>
-                <td className="py-3">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={order.produce?.image_url}
-                      alt={order.produce?.name}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-global-bg text-xl"
-                    />
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        {order.produce?.name}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {order.produce?.category.name}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-3 ">
-                  <div>
-                    <p className="font-medium text-slate-600">
-                      {order.buyer_name}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-200 text-left text-sm">
+            <thead>
+              <tr className="text-slate-500">
+                <th className="pb-3 pr-3 font-medium">Order</th>
+                <th className="pb-3 pr-3 font-medium">Produce</th>
+                <th className="pb-3 pr-3 font-medium">Buyer</th>
+                <th className="pb-3 pr-3 font-medium">Qty</th>
+                <th className="pb-3 pr-3 font-medium">Total</th>
+                <th className="pb-3 pr-3 font-medium">Status</th>
+                <th className="pb-3 font-medium">Payment Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  onClick={() => {
+                    setSelected(order);
+                    setSearchParams(
+                      { order: order.order_number },
+                      { replace: true },
+                    );
+                  }}
+                  className={`cursor-pointer border-t border-slate-100 ${
+                    selected?.id === order.id
+                      ? "bg-global-bg"
+                      : "hover:bg-slate-50"
+                  }`}
+                >
+                  <td className="py-3 pr-3">
+                    <p className="font-medium text-slate-900">
+                      {order.order_number}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {order.buyer?.email}
+                      {formatDate(`${order.placed_at}`)}
                     </p>
-                  </div>
-                </td>
-                <td className="py-3 text-slate-600">
-                  {order.quantity} {order.items?.[0]?.unit}
-                </td>
-                <td className="py-3 text-slate-600">{order.total}</td>
-                <td className="py-3">
-                  <StatusBadge status={order.status} />
-                </td>
-                <td className="py-3">
-                  <StatusBadge status={order.payment_status} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                  <td className="py-3 pr-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={order.produce?.image_url}
+                        alt={order.produce?.name}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-global-bg text-xl"
+                      />
+                      <div>
+                        <p className="font-medium text-slate-900">
+                          {order.produce?.name}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {order.produce?.category.name}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-3 pr-3">
+                    <div>
+                      <p className="font-medium text-slate-600">
+                        {order.buyer_name}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {order.buyer?.email}
+                      </p>
+                    </div>
+                  </td>
+                  <td className="py-3 pr-3 text-slate-600">
+                    {order.quantity} {order.items?.[0]?.unit}
+                  </td>
+                  <td className="py-3 pr-3 text-slate-600">{order.total}</td>
+                  <td className="py-3 pr-3">
+                    <StatusBadge status={order.status} />
+                  </td>
+                  <td className="py-3">
+                    <StatusBadge status={order.payment_status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <Pagination
           page={page}

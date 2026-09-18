@@ -149,7 +149,7 @@ export default function FarmerProfile() {
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleFarmerStatusChange(farmerId, status === "active" ? "inactive" : "active")}
               className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -197,12 +197,12 @@ export default function FarmerProfile() {
         </div>
 
         {/* Tabs */}
-        <div className="mt-6 flex gap-1 border-b border-slate-100">
+        <div className="mt-6 flex gap-1 overflow-x-auto border-b border-slate-100">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`relative px-4 py-2.5 text-sm font-medium transition ${
+              className={`relative shrink-0 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition ${
                 activeTab === tab
                   ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
                   : "text-slate-500 hover:text-slate-800"
@@ -374,7 +374,8 @@ function OverviewTab({ farmer }: { farmer: Farmer | null }) {
 
 function ListingsTab({ farmer }: { farmer: Farmer | null }) {
   return (
-    <table className="w-full text-left text-sm">
+    <div className="overflow-x-auto">
+    <table className="w-full min-w-120 text-left text-sm">
       <thead>
         <tr className="text-slate-500">
           <th className="pb-3 font-medium">Produce</th>
@@ -411,12 +412,14 @@ function ListingsTab({ farmer }: { farmer: Farmer | null }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
 function OrdersTab({ farmer }: { farmer: Farmer | null }) {
   return (
-    <table className="w-full text-left text-sm">
+    <div className="overflow-x-auto">
+    <table className="w-full min-w-120 text-left text-sm">
       <thead>
         <tr className="text-slate-500">
           <th className="pb-3 font-medium">Order</th>
@@ -445,6 +448,7 @@ function OrdersTab({ farmer }: { farmer: Farmer | null }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 

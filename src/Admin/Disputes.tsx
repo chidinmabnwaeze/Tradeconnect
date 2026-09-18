@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, Paperclip, Send, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Paperclip, Send, XCircle } from "lucide-react";
 import Layout from "../components/Layout";
 import Avatar from "../components/Avatar";
 import StatusBadge from "../components/StatusBadge";
@@ -28,6 +28,8 @@ export default function Disputes() {
   const [error, setError] = useState<string | null>(null);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  // Mobile-only: which pane is visible — list of disputes, or the open chat.
+  const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const [selected, setSelected] = useState<Dispute | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -132,7 +134,11 @@ export default function Disputes() {
         <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-primary">{error}</div>
       )}
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        <div className="rounded-4xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div
+          className={`rounded-4xl border border-slate-200 bg-white p-4 shadow-sm ${
+            mobileView === "chat" ? "hidden lg:block" : ""
+          }`}
+        >
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -174,7 +180,10 @@ export default function Disputes() {
             {filtered.map((dispute) => (
               <button
                 key={dispute.id}
-                onClick={() => setSelectedId(dispute.id)}
+                onClick={() => {
+                  setSelectedId(dispute.id);
+                  setMobileView("chat");
+                }}
                 className={`flex w-full items-start gap-3 rounded-2xl p-3 text-left ${
                   dispute.id === selectedId ? "bg-global-bg" : "hover:bg-slate-50"
                 }`}
@@ -208,7 +217,11 @@ export default function Disputes() {
           </div>
         </div>
 
-        <div className="flex flex-col rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div
+          className={`flex-col rounded-4xl border border-slate-200 bg-white p-6 shadow-sm ${
+            mobileView === "list" ? "hidden lg:flex" : "flex"
+          }`}
+        >
           {!selected && (
             <p className="m-auto text-sm text-slate-400">
               {detailLoading ? "Loading..." : "Select a dispute to view the conversation."}
@@ -219,6 +232,12 @@ export default function Disputes() {
             <>
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setMobileView("list")}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 lg:hidden"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
                   <Avatar name={selected.buyer.name} />
                   <div>
                     <p className="font-medium text-slate-900">{selected.buyer.name}</p>
