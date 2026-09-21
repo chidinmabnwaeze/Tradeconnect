@@ -43,7 +43,7 @@ export default function AuthLayout({
 
           <p className="mt-4 max-w-sm text-white/80 animate-fade-in-up animation-delay-400">
             Manage vendors, approve listings and keep TradeConnect operations
-            running smoothly.
+            running smoothly
           </p>
         </div>
 
