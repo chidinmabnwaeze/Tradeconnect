@@ -1,0 +1,504 @@
+cd /var/www/tradeconnect
+
+cat > /tmp/tradeconnect_marketplace_reset.php <<'PHP'
+<?php
+
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Enums\UserRole;
+
+$adminEmail = 'admin@tradeconnectmarket.com';
+$demoPassword = 'adminPass@123';
+
+$admin = User::where('email', $adminEmail)->first();
+
+if (!$admin) {
+    throw new RuntimeException(
+        "ABORTED: Production admin {$adminEmail} was not found."
+    );
+}
+
+echo "Preserving admin: {$admin->email} (ID {$admin->id})\n";
+echo "Starting TradeConnect marketplace reset...\n";
+
+DB::transaction(function () use ($adminEmail, $demoPassword) {
+
+    /*
+    |--------------------------------------------------------------------------
+    | 1. CLEAR OLD TEST / MARKETPLACE DATA
+    |--------------------------------------------------------------------------
+    */
+
+    DB::table('dispute_message_attachments')->delete();
+    DB::table('dispute_reads')->delete();
+    DB::table('dispute_messages')->delete();
+    DB::table('disputes')->delete();
+
+    DB::table('order_status_events')->delete();
+    DB::table('order_items')->delete();
+    DB::table('orders')->delete();
+
+    DB::table('listing_images')->delete();
+    DB::table('listings')->delete();
+
+    DB::table('produce')->delete();
+    DB::table('categories')->delete();
+    DB::table('farmers')->delete();
+
+    DB::table('notifications')->delete();
+    DB::table('auth_otps')->delete();
+    DB::table('password_reset_tokens')->delete();
+    DB::table('sessions')->delete();
+
+    DB::table('failed_jobs')->delete();
+    DB::table('jobs')->delete();
+    DB::table('job_batches')->delete();
+
+    /*
+     * Preserve ONLY the new production admin.
+     */
+    DB::table('users')
+        ->where('email', '!=', $adminEmail)
+        ->delete();
+
+    /*
+    |--------------------------------------------------------------------------
+    | 2. BUYER ACCOUNTS
+    |--------------------------------------------------------------------------
+    */
+
+    $buyersData = [
+        [
+            'name' => 'Tunde Adeyemi',
+            'email' => 'tunde@gmail.com',
+            'phone_number' => '08030001001',
+            'state' => 'Lagos',
+            'lga' => 'Ikeja',
+            'address' => 'Ikeja, Lagos',
+        ],
+        [
+            'name' => 'Ngozi Eze',
+            'email' => 'ngozi@gmail.com',
+            'phone_number' => '08030001002',
+            'state' => 'FCT',
+            'lga' => 'Abuja Municipal',
+            'address' => 'Gwarinpa, Abuja',
+        ],
+        [
+            'name' => 'Ibrahim Musa',
+            'email' => 'ibrahim@gmail.com',
+            'phone_number' => '08030001003',
+            'state' => 'Kaduna',
+            'lga' => 'Kaduna North',
+            'address' => 'Kaduna North, Kaduna',
+        ],
+        // [
+        //     'name' => 'Grace Etim',
+        //     'email' => 'buyer.grace@example.com',
+        //     'phone_number' => '08030001004',
+        //     'state' => 'Rivers',
+        //     'lga' => 'Port Harcourt',
+        //     'address' => 'Port Harcourt, Rivers',
+        // ],
+        // [
+        //     'name' => 'Samuel Balogun',
+        //     'email' => 'buyer.samuel@example.com',
+        //     'phone_number' => '08030001005',
+        //     'state' => 'Oyo',
+        //     'lga' => 'Ibadan North',
+        //     'address' => 'Ibadan, Oyo',
+        // ],
+        // [
+        //     'name' => 'Fatima Yusuf',
+        //     'email' => 'buyer.fatima@example.com',
+        //     'phone_number' => '08030001006',
+        //     'state' => 'Kano',
+        //     'lga' => 'Nassarawa',
+        //     'address' => 'Nassarawa, Kano',
+        // ],
+    ];
+
+    $buyers = [];
+
+    foreach ($buyersData as $buyerData) {
+        $buyer = User::create([
+            ...$buyerData,
+            'password' => $demoPassword,
+            'role' => UserRole::User,
+        ]);
+
+        $buyers[$buyerData['email']] = $buyer;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 3. CATEGORIES
+    |--------------------------------------------------------------------------
+    */
+
+    $categories = [];
+
+    foreach (['Grains', 'Cereals', 'Legumes'] as $categoryName) {
+        $categories[$categoryName] = DB::table('categories')->insertGetId([
+            'name' => $categoryName,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 4. PRODUCE
+    |--------------------------------------------------------------------------
+    */
+
+    $produceData = [
+        ['Rice', 'Grains', 'produce-images/BmFWgcijBXmEDhLiy579qF4RKv2dS9YVjwRg9o7B.jpg'],
+        ['Maize', 'Grains', 'produce-images/tTDf4tKH3Ngbm4CDyTV61LmNz7qZci6WCwr9c05l.jpg'],
+        ['Sorghum', 'Grains', null],
+        ['Millet', 'Grains', 'produce-images/legacy-2.jpg'],
+        ['Wheat', 'Cereals', 'produce-images/oQRezmfp9AhcTUCLKGGKrHh9jATittaQAO9pKKFA.jpg'],
+        ['Soybeans', 'Legumes', null],
+        ['Cowpea', 'Legumes', 'produce-images/4ybR1M4FDrvUP7HARncLsafjhkUDTW7gIQ5224Lt.jpg'],
+        ['Groundnut', 'Legumes', null],
+    ];
+
+    $produce = [];
+
+    foreach ($produceData as [$name, $category, $imagePath]) {
+        $produce[$name] = DB::table('produce')->insertGetId([
+            'category_id' => $categories[$category],
+            'name' => $name,
+            'image' => null,
+            'image_mime' => null,
+            'image_path' => $imagePath,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 5. FARMERS
+    |--------------------------------------------------------------------------
+    */
+
+    $farmerData = [
+        [
+            'code' => 'FAR-0001',
+            'name' => 'Amina Bello',
+            'email' => 'amina.bello@gmail.com',
+            'state' => 'Kaduna',
+            'lga' => 'Giwa',
+            'phone' => '08050002001',
+            'farm' => 'Arewa Grain Farms',
+            'size' => 18.50,
+            'method' => 'Mixed farming',
+            'years' => 12,
+        ],
+        [
+            'code' => 'FAR-0002',
+            'name' => 'Musa Abdullahi',
+            'email' => 'musa.abdullahi@gmail.com',
+            'state' => 'Kano',
+            'lga' => 'Bichi',
+            'phone' => '08050002002',
+            'farm' => 'Bichi Harvest Fields',
+            'size' => 24.00,
+            'method' => 'Rain-fed farming',
+            'years' => 15,
+        ],
+        [
+            'code' => 'FAR-0003',
+            'name' => 'Samuel Ojo',
+            'email' => 'samuel.ojo@gmail.com',
+            'state' => 'Niger',
+            'lga' => 'Lapai',
+            'phone' => '08050002003',
+            'farm' => 'Lapai Agro Fields',
+            'size' => 14.75,
+            'method' => 'Mixed farming',
+            'years' => 9,
+        ],
+        [
+            'code' => 'FAR-0004',
+            'name' => 'Grace Nwankwo',
+            'email' => 'grace.nwankwo@gmail.com',
+            'state' => 'Benue',
+            'lga' => 'Makurdi',
+            'phone' => '08050002004',
+            'farm' => 'Green Valley Produce',
+            'size' => 11.20,
+            'method' => 'Sustainable farming',
+            'years' => 8,
+        ],
+        [
+            'code' => 'FAR-0005',
+            'name' => 'Bashir Lawal',
+            'email' => 'bashir.lawal@gmail.com',
+            'state' => 'Katsina',
+            'lga' => 'Funtua',
+            'phone' => '08050002005',
+            'farm' => 'Funtua Cereal Farm',
+            'size' => 21.40,
+            'method' => 'Rain-fed farming',
+            'years' => 14,
+        ],
+    ];
+
+    $farmers = [];
+
+    foreach ($farmerData as $index => $f) {
+        $farmers[$f['code']] = DB::table('farmers')->insertGetId([
+            'farmer_code' => $f['code'],
+            'name' => $f['name'],
+            'email' => $f['email'],
+            'state' => $f['state'],
+            'lga' => $f['lga'],
+            'status' => 'active',
+            'verification_status' => 'verified',
+            'verified_at' => now()->subDays(30 - ($index * 3)),
+            'suspended_at' => null,
+            'phone_number' => $f['phone'],
+            'address' => $f['lga'] . ', ' . $f['state'],
+            'gender' => null,
+            'date_of_birth' => null,
+            'farm_name' => $f['farm'],
+            'farm_size_hectares' => $f['size'],
+            'farming_method' => $f['method'],
+            'years_experience' => $f['years'],
+            'farm_address' => $f['lga'] . ', ' . $f['state'],
+            'created_at' => now()->subDays(45 - ($index * 4)),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 6. LIVE MARKETPLACE LISTINGS
+    |--------------------------------------------------------------------------
+    */
+
+    $listingData = [
+        ['rice-amina', 'FAR-0001', 'Rice', 1850, 420, 90, 'Premium locally grown rice, cleaned and ready for bulk purchase.'],
+        ['maize-amina', 'FAR-0001', 'Maize', 1050, 500, 75, 'Dry yellow maize suitable for food processing and animal feed.'],
+
+        ['millet-musa', 'FAR-0002', 'Millet', 1250, 360, 80, 'Clean dry millet harvested from Kano farms.'],
+        ['sorghum-musa', 'FAR-0002', 'Sorghum', 1150, 410, 80, 'Quality sorghum grain available for bulk orders.'],
+        ['groundnut-musa', 'FAR-0002', 'Groundnut', 2100, 220, 100, 'Dry shelled groundnuts from northern Nigeria.'],
+
+        ['rice-samuel', 'FAR-0003', 'Rice', 1780, 300, 100, 'Well processed local rice available in wholesale quantities.'],
+        ['soy-samuel', 'FAR-0003', 'Soybeans', 1450, 280, 85, 'Clean soybeans suitable for food and feed processors.'],
+        ['cowpea-samuel', 'FAR-0003', 'Cowpea', 1950, 240, 95, 'Dry cowpea beans selected for quality and consistency.'],
+
+        ['maize-grace', 'FAR-0004', 'Maize', 1080, 340, 80, 'Fresh-season dry maize with low moisture content.'],
+        ['soy-grace', 'FAR-0004', 'Soybeans', 1500, 260, 90, 'Farm-selected soybeans available for commercial buyers.'],
+        ['sorghum-grace', 'FAR-0004', 'Sorghum', 1180, 270, 85, 'Clean red sorghum suitable for processing.'],
+
+        ['wheat-bashir', 'FAR-0005', 'Wheat', 1650, 310, 100, 'Dry wheat grain available for processors and wholesalers.'],
+        ['millet-bashir', 'FAR-0005', 'Millet', 1280, 290, 90, 'Quality millet produced in Katsina State.'],
+        ['maize-bashir', 'FAR-0005', 'Maize', 1100, 450, 75, 'Bulk yellow maize available for nationwide orders.'],
+    ];
+
+    $listings = [];
+
+    foreach ($listingData as $index => $l) {
+        [$key, $farmerCode, $produceName, $price, $stock, $deliveryFee, $description] = $l;
+
+        $listings[$key] = DB::table('listings')->insertGetId([
+            'farmer_id' => $farmers[$farmerCode],
+            'produce_id' => $produce[$produceName],
+            'price' => $price,
+            'unit' => 'kg',
+            'stock' => $stock,
+            'status' => 'active',
+            'description' => $description,
+            'label' => null,
+            'grade' => null,
+            'available_from' => now()->subDays(20 - ($index % 10))->toDateString(),
+            'minimum_order_quantity' => 1,
+            'delivery_fee_per_unit' => $deliveryFee,
+            'original_price' => null,
+            'discount_percent' => null,
+            'publication_status' => 'live',
+            'published_at' => now()->subDays(20 - ($index % 10)),
+            'created_at' => now()->subDays(25 - ($index % 12)),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 7. SYNTHETIC ORDERS
+    |--------------------------------------------------------------------------
+    |
+    | "paid" demo orders use provider = demo.
+    | NO Paystack payment/reference is being fabricated.
+    |--------------------------------------------------------------------------
+    */
+
+    $orders = [
+        ['TC-DEMO-0001', 'buyer.tunde@example.com',   'rice-amina',    20, 'delivered',  'paid',    18],
+        ['TC-DEMO-0002', 'buyer.ngozi@example.com',   'maize-grace',   15, 'delivered',  'paid',    15],
+        ['TC-DEMO-0003', 'buyer.ibrahim@example.com', 'millet-musa',   25, 'delivered',  'paid',    12],
+        ['TC-DEMO-0004', 'buyer.grace@example.com',   'soy-grace',     10, 'in_transit', 'paid',     7],
+        ['TC-DEMO-0005', 'buyer.samuel@example.com',  'wheat-bashir',  12, 'in_transit', 'paid',     5],
+        ['TC-DEMO-0006', 'buyer.fatima@example.com',  'cowpea-samuel', 8, 'new',        'pending',  2],
+        ['TC-DEMO-0007', 'buyer.tunde@example.com',   'sorghum-musa',  18, 'new',        'pending',  1],
+        ['TC-DEMO-0008', 'buyer.ngozi@example.com',   'groundnut-musa',6, 'cancelled',   'failed',   9],
+        ['TC-DEMO-0009', 'buyer.ibrahim@example.com', 'maize-bashir',  30, 'delivered',  'paid',    10],
+    ];
+
+    foreach ($orders as $index => $o) {
+        [
+            $orderNumber,
+            $buyerEmail,
+            $listingKey,
+            $quantity,
+            $status,
+            $paymentStatus,
+            $daysAgo
+        ] = $o;
+
+        $listing = DB::table('listings')
+            ->join('produce', 'produce.id', '=', 'listings.produce_id')
+            ->join('categories', 'categories.id', '=', 'produce.category_id')
+            ->where('listings.id', $listings[$listingKey])
+            ->select([
+                'listings.*',
+                'produce.name as produce_name',
+                'categories.name as category_name',
+            ])
+            ->first();
+
+        $buyer = $buyers[$buyerEmail];
+
+        $subtotal = $listing->price * $quantity;
+        $delivery = $listing->delivery_fee_per_unit * $quantity;
+        $total = $subtotal + $delivery;
+
+        $placedAt = now()->subDays($daysAgo)->setTime(10 + ($index % 6), 15);
+
+        $isPaid = $paymentStatus === 'paid';
+        $isFailed = $paymentStatus === 'failed';
+
+        $orderId = DB::table('orders')->insertGetId([
+            'order_number' => $orderNumber,
+            'user_id' => $buyer->id,
+            'listing_id' => $listing->id,
+            'quantity' => $quantity,
+            'subtotal' => $subtotal,
+            'delivery_fee' => $delivery,
+            'total' => $total,
+
+            'status' => $status,
+            'payment_status' => $paymentStatus,
+
+            'payment_provider' => $paymentStatus === 'pending'
+                ? null
+                : 'demo',
+
+            'payment_reference' => $paymentStatus === 'pending'
+                ? null
+                : 'DEMO-' . strtoupper(str_replace('TC-DEMO-', '', $orderNumber)),
+
+            'payment_access_code' => null,
+            'payment_authorization_url' => null,
+
+            'paid_at' => $isPaid
+                ? $placedAt->copy()->addMinutes(8)
+                : null,
+
+            'payment_failed_at' => $isFailed
+                ? $placedAt->copy()->addMinutes(5)
+                : null,
+
+            'refunded_at' => null,
+
+            'delivery_method' => 'delivery',
+            'delivery_name' => $buyer->name,
+            'delivery_phone' => $buyer->phone_number,
+            'delivery_state' => $buyer->state,
+            'delivery_lga' => $buyer->lga,
+            'delivery_address' => $buyer->address,
+            'delivery_notes' => null,
+
+            'placed_at' => $placedAt,
+
+            'confirmed_at' => in_array($status, ['in_transit', 'delivered'])
+                ? $placedAt->copy()->addHours(3)
+                : null,
+
+            'processing_at' => in_array($status, ['in_transit', 'delivered'])
+                ? $placedAt->copy()->addDay()
+                : null,
+
+            'out_for_delivery_at' => in_array($status, ['in_transit', 'delivered'])
+                ? $placedAt->copy()->addDays(2)
+                : null,
+
+            'deliver_by' => in_array($status, ['in_transit', 'delivered'])
+                ? $placedAt->copy()->addDays(4)
+                : null,
+
+            'delivered_at' => $status === 'delivered'
+                ? $placedAt->copy()->addDays(3)
+                : null,
+
+            'cancelled_at' => $status === 'cancelled'
+                ? $placedAt->copy()->addHours(2)
+                : null,
+
+            'created_at' => $placedAt,
+            'updated_at' => now(),
+        ]);
+
+        DB::table('order_items')->insert([
+            'order_id' => $orderId,
+            'listing_id' => $listing->id,
+            'farmer_id' => $listing->farmer_id,
+            'produce_id' => $listing->produce_id,
+            'produce_name' => $listing->produce_name,
+            'category_name' => $listing->category_name,
+            'unit' => $listing->unit,
+            'quantity' => $quantity,
+            'unit_price' => $listing->price,
+            'delivery_fee_per_unit' => $listing->delivery_fee_per_unit,
+            'discount_amount' => 0,
+            'line_total' => $subtotal,
+            'delivery_total' => $delivery,
+            'created_at' => $placedAt,
+            'updated_at' => now(),
+        ]);
+    }
+});
+
+echo "\nRESET COMPLETE\n";
+echo "========================================\n";
+echo "Users:       " . DB::table('users')->count() . "\n";
+echo "Farmers:     " . DB::table('farmers')->count() . "\n";
+echo "Categories:  " . DB::table('categories')->count() . "\n";
+echo "Produce:     " . DB::table('produce')->count() . "\n";
+echo "Listings:    " . DB::table('listings')->count() . "\n";
+echo "Orders:      " . DB::table('orders')->count() . "\n";
+echo "Order items: " . DB::table('order_items')->count() . "\n";
+echo "Disputes:    " . DB::table('disputes')->count() . "\n";
+echo "========================================\n";
+
+echo "\nAccounts now in users table:\n";
+
+foreach (
+    DB::table('users')
+        ->select('id', 'name', 'email', 'role', 'account_code')
+        ->orderBy('id')
+        ->get()
+    as $u
+) {
+    echo "{$u->id} | {$u->name} | {$u->email} | {$u->role} | {$u->account_code}\n";
+}
+
+echo "\nSynthetic buyer password: TradeConnectDemo@2026!\n";
+echo "Production admin password was NOT changed.\n";
+PHP
+
+php artisan tinker --execute='require "/tmp/tradeconnect_marketplace_reset.php";'
