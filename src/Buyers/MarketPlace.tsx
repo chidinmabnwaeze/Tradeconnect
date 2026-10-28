@@ -4,12 +4,13 @@ import { MapPin, Plus } from "lucide-react";
 import BuyerLayout from "../components/BuyerLayout";
 import { useCart } from "./CartContext";
 import { formatNaira } from "../lib/format";
+import { formatQty, unitLabel } from "../lib/units";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import type { Category } from "../lib/types/category";
 import { getActiveListings } from "../lib/services/listings.service";
 import { type Listing } from "../lib/types/listing";
 import { getPublicCategories } from "../lib/services/categories.service";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import type { MarketplaceSummary } from "../lib/types/marketplace";
 import { getMarketplaceSummary } from "../lib/services/marketplace.service";
 
@@ -47,7 +48,7 @@ export const Marketplace = () => {
         const response = await getMarketplaceSummary();
         setmetrics(response);
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       }
     };
     fetchMetrics();
@@ -85,7 +86,7 @@ export const Marketplace = () => {
         const response = await getActiveListings();
         setListings(response.data);
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       } finally {
         setLoading(false);
       }
@@ -112,7 +113,7 @@ export const Marketplace = () => {
       cartItems.find((item) => item.listing_id === product.id)?.quantity ?? 0;
     if (product.stock <= 0 || inCartQty >= product.stock) {
       toast.error(
-        ` ${product.stock} ${product.unit ?? "unit"} of ${product.produce.name} available`,
+        `${formatQty(product.stock, product.unit)} of ${product.produce.name} available`,
       );
       return;
     }
@@ -122,7 +123,6 @@ export const Marketplace = () => {
 
   return (
     <BuyerLayout breadcrumb="Marketplace / Overview">
-      <ToastContainer />
       <main className="pb-6">
         <section className="banner-primary flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
@@ -214,16 +214,16 @@ export const Marketplace = () => {
                     {product.farmer.state} - {product.farmer.lga}
                   </p>
                   <p className="mt-1 text-xs text-slate-400">
-                    {product.stock} {product.unit} available
+                    {formatQty(product.stock, product.unit)} available
                   </p>
                   {(product.minimum_order_quantity ?? 1) > 1 && (
                     <p className="mt-1 text-xs text-slate-400">
-                      Min {product.minimum_order_quantity} {product.unit ?? "unit"}
+                      Min {formatQty(product.minimum_order_quantity ?? 1, product.unit)}
                     </p>
                   )}
                   <div className="mt-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                     <p className="text-sm font-semibold text-primary">
-                      {formatNaira(Number(product.price))} <span className="text-xs">per unit</span>
+                      {formatNaira(Number(product.price))} <span className="text-xs">per {unitLabel(product.unit)}</span>
                     </p>
                     <button
                       onClick={(e) => {

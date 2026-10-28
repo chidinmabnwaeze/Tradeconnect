@@ -14,6 +14,7 @@ import {
 import { getMyOrders } from "../lib/services/orders.service";
 import type { Order } from "../lib/types/order";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { useErrorToast } from "../lib/useErrorToast";
 
 interface DisputeNavState {
   orderId?: number;
@@ -39,6 +40,7 @@ export default function Disputes() {
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  useErrorToast(error);
   const [search, setSearch] = useState("");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);

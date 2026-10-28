@@ -14,10 +14,10 @@ import type { CreateOrderPayload, DeliveryMethod } from "../lib/types/order";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import { lgasByState, nigerianStates } from "../lib/data/nigeria-lgas";
 import Paystack from "@paystack/inline-js";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 export default function Checkout() {
-  const { items, clear } = useCart();
+  const { items, clear, deliveryFee } = useCart();
   const navigate = useNavigate();
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [deliveryMethod, setDeliveryMethod] =
@@ -122,7 +122,6 @@ export default function Checkout() {
 
   return (
     <BuyerLayout breadcrumb="Marketplace / Checkout">
-      <ToastContainer />
       <div className="mx-auto  space-y-6 pb-10">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">
@@ -253,7 +252,7 @@ export default function Checkout() {
                   Delivered in 2-4 business days, straight to your doorstep.
                 </p>
                 <p className="mt-1 text-xs font-semibold text-primary">
-                  {formatNaira(items.reduce((sum, item) => sum + item.delivery_fee_per_unit * item.quantity, 0))}
+                  {formatNaira(deliveryFee)}
                 </p>
               </div>
             </button>

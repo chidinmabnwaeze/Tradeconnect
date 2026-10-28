@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getListing, updateListing } from "../lib/services/listings.service";
 import { updateProduce } from "../lib/services/produce.service";
-import { getFarmers } from "../lib/services/farmers.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import type {
   Listing,
@@ -14,6 +13,13 @@ import type {
   ListingStatus,
 } from "../lib/types/listing";
 import type { Farmer, FarmerSummary } from "../lib/types/farmer";
+import {
+  DeliveryPricingFields,
+  UnitSelect,
+} from "../components/ListingFields";
+import { unitLabel } from "../lib/units";
+import { useFarmerSearch } from "../lib/useFarmerSearch";
+import { useErrorToast } from "../lib/useErrorToast";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
@@ -30,7 +36,10 @@ const EditListing = () => {
   const [stock, setStock] = useState("");
   const [minOrderQty, setMinOrderQty] = useState("");
   const [status, setStatus] = useState<ListingStatus>("active");
+  const [unit, setUnit] = useState("");
+  const [deliveryBaseFee, setDeliveryBaseFee] = useState("");
   const [deliveryFee, setDeliveryFee] = useState("");
+  const [deliveryFeeCap, setDeliveryFeeCap] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const imagePreviewUrl = useMemo(
     () => (image ? URL.createObjectURL(image) : null),
@@ -41,10 +50,14 @@ const EditListing = () => {
     null,
   );
   const [showFarmerPicker, setShowFarmerPicker] = useState(false);
-  const [farmers, setFarmers] = useState<Farmer[]>([]);
-  const [farmersLoading, setFarmersLoading] = useState(false);
-  const [farmersLoaded, setFarmersLoaded] = useState(false);
   const [farmerSearch, setFarmerSearch] = useState("");
+  // Only searches once the picker is opened.
+  const { farmers, loading: farmersLoading } = useFarmerSearch(
+    farmerSearch,
+    showFarmerPicker,
+  );
+
+  useErrorToast(error);
 
   useEffect(() => {
     if (!id) return;
@@ -63,12 +76,22 @@ const EditListing = () => {
             : "",
         );
         setStatus(response.status);
+        setUnit(response.unit ?? "");
         setDeliveryFee(
-          response.delivery_fee_per_unit
-            ? String(response.delivery_fee_per_unit)
+          response.delivery_fee_per_unit != null
+            ? String(Number(response.delivery_fee_per_unit))
             : "",
         );
-        console.log("Loaded listing:", response);
+        setDeliveryBaseFee(
+          response.delivery_base_fee != null
+            ? String(Number(response.delivery_base_fee))
+            : "",
+        );
+        setDeliveryFeeCap(
+          response.delivery_fee_cap != null
+            ? String(Number(response.delivery_fee_cap))
+            : "",
+        );
       } catch (err) {
         setError(getErrorMessage(err));
       } finally {
@@ -83,32 +106,11 @@ const EditListing = () => {
     return () => URL.revokeObjectURL(imagePreviewUrl);
   }, [imagePreviewUrl]);
 
-  const openFarmerPicker = async () => {
-    setShowFarmerPicker(true);
-    if (farmersLoaded) return;
-
-    setFarmersLoading(true);
-    try {
-      setFarmers((await getFarmers({ per_page: 100 })).data);
-      setFarmersLoaded(true);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setFarmersLoading(false);
-    }
-  };
-
   const handleSelectFarmer = (farmer: Farmer) => {
     setAssignedFarmer(farmer);
     setShowFarmerPicker(false);
     setFarmerSearch("");
   };
-
-  const filteredFarmers = farmers.filter((farmer) =>
-    `${farmer.name} ${farmer.state} ${farmer.lga}`
-      .toLowerCase()
-      .includes(farmerSearch.toLowerCase()),
-  );
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -129,6 +131,9 @@ const EditListing = () => {
       return setError("Please enter a valid price");
     if (!stock || Number(stock) < 0)
       return setError("Please enter a valid stock quantity");
+    if (!unit.trim()) return setError("Please select a unit of measurement");
+    if (deliveryFee !== "" && Number(deliveryFee) < 0)
+      return setError("Please enter a valid delivery fee per additional unit");
     if (!assignedFarmer) return setError("Please assign a farmer");
 
     setSaving(true);
@@ -143,9 +148,12 @@ const EditListing = () => {
 
       const payload: Partial<ListingPayload> = {
         price: Number(price),
+        unit: unit.trim(),
         stock: Number(stock),
         minimum_order_quantity: minOrderQty ? Number(minOrderQty) : undefined,
         delivery_fee_per_unit: deliveryFee ? Number(deliveryFee) : undefined,
+        delivery_base_fee: deliveryBaseFee ? Number(deliveryBaseFee) : null,
+        delivery_fee_cap: deliveryFeeCap ? Number(deliveryFeeCap) : null,
         status,
         publication_status: status === "active" ? "live" : "pending",
       };
@@ -271,7 +279,7 @@ const EditListing = () => {
                 onClick={() =>
                   showFarmerPicker
                     ? setShowFarmerPicker(false)
-                    : openFarmerPicker()
+                    : setShowFarmerPicker(true)
                 }
                 className="font-medium text-[#4A7C2A]"
               >
@@ -292,10 +300,10 @@ const EditListing = () => {
                   {farmersLoading && (
                     <p className="text-sm text-gray-400">Loading farmers...</p>
                   )}
-                  {!farmersLoading && filteredFarmers.length === 0 && (
+                  {!farmersLoading && farmers.length === 0 && (
                     <p className="text-sm text-gray-400">No farmers found.</p>
                   )}
-                  {filteredFarmers.map((farmer) => (
+                  {farmers.map((farmer) => (
                     <div
                       key={farmer.id}
                       onClick={() => handleSelectFarmer(farmer)}
@@ -331,9 +339,12 @@ const EditListing = () => {
                 available
               </p>
             </div>
+            <div className="flex flex-col gap-2 mb-4 w-2/5">
+              <UnitSelect unit={unit} onChange={setUnit} />
+            </div>
             <div className="flex justify-between gap-2 mb-4">
               <div className="flex flex-col gap-2 w-full">
-                <label className="font-medium">Price per unit</label>
+                <label className="font-medium">Price per {unitLabel(unit)}</label>
                 <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
                   <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
                     N
@@ -346,7 +357,7 @@ const EditListing = () => {
                     onChange={(e) => setPrice(e.target.value)}
                   />
                   <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
-                    /kg
+                    /{unitLabel(unit)}
                   </span>
                 </div>
               </div>
@@ -360,7 +371,7 @@ const EditListing = () => {
                   onChange={(e) => setStock(e.target.value)}
                 />
                 <p className="text-gray-400 text-sm">
-                  In the same unit selected above
+                  Number of {unitLabel(unit, 2)} available
                 </p>
               </div>
             </div>
@@ -376,66 +387,15 @@ const EditListing = () => {
             </div>
           </section>
 
-          <section className="bg-white p-6 rounded-lg mt-6">
-            <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
-              <h1 className="text-xl font-bold">Delivery Pricing</h1>
-              <p className="text-gray-400 font-medium">
-                The cumulative delivery cost of buyer order.
-              </p>
-            </div>
-            <div className="flex justify-between gap-2 mb-4">
-              <div className="flex flex-col gap-2 w-full">
-                <label className="font-medium">Price per unit</label>
-                <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
-                  <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
-                    N
-                  </span>
-                  <input
-                    type="number"
-                    placeholder="e.g. 5000"
-                    className="w-full py-2 px-3 focus:outline-none rounded-sm"
-                    value={deliveryFee}
-                    onChange={(e) => setDeliveryFee(e.target.value)}
-                  />
-                  {/* <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
-                    /kg
-                  </span> */}
-                </div>
-              </div>
-              {/* <div className="flex flex-col gap-2 w-full">
-                <label className="font-medium">Buyer Stock</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 10"
-                  className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                />
-                <p className="text-gray-400 text-sm">
-                  In the same unit selected above
-                </p>
-              </div> */}
-            </div>
-            <p className="text-gray-400 text-sm">
-              Total delivery cost will be derived from the price per unit and
-              order quantity.
-            </p>
-            {/* <div className="flex flex-col gap-2 mb-4 w-2/5">
-              <label className="font-medium">Total Delivery Cost</label>
-              <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
-                <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
-                  N
-                </span>
-                <input
-                  type="number"
-                  placeholder="e.g. 5000"
-                  className="w-full py-2 px-3 focus:outline-none rounded-sm"
-                  value={total}
-                  onChange={(e) => setTotal(e.target.value)}
-                />
-              </div>
-            </div> */}
-          </section>
+          <DeliveryPricingFields
+            unit={unit}
+            baseFee={deliveryBaseFee}
+            perUnitFee={deliveryFee}
+            cap={deliveryFeeCap}
+            onBaseFeeChange={setDeliveryBaseFee}
+            onPerUnitFeeChange={setDeliveryFee}
+            onCapChange={setDeliveryFeeCap}
+          />
 
           <section className="bg-white p-6 rounded-lg mt-6">
             <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">

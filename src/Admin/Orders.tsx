@@ -18,7 +18,9 @@ import {
   updateOrderStatus,
 } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { toast } from "react-toastify";
 import { formatDate } from "../lib/format";
+import { formatQty, unitLabel } from "../lib/units";
 import { useSearchParams } from "react-router-dom";
 
 const PAGE_SIZE = 10;
@@ -46,7 +48,7 @@ export default function Orders() {
         prev.map((order) => (order.id === updated.id ? updated : order)),
       );
     } catch (error) {
-      getErrorMessage(error);
+      toast.error(getErrorMessage(error));
     } finally {
       setUpdatingStatus(false);
     }
@@ -126,7 +128,7 @@ export default function Orders() {
           );
         }
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       }
     };
 
@@ -184,7 +186,7 @@ export default function Orders() {
           <div className="flex items-center gap-4">
             <Avatar name={selected?.buyer?.name ?? "Buyer"} size="md" />
             <div>
-              <p className="font-semibold text-slate-900">
+              <p className="font-semibold text-slate-900 capitalize">
                 {selected?.buyer?.name ?? "Buyer"}
               </p>
               <p className="text-xs text-slate-500">{selected?.order_number}</p>
@@ -197,9 +199,11 @@ export default function Orders() {
 
           <div className="flex flex-wrap gap-6 text-sm sm:gap-8">
             <div>
-              <p className="text-slate-500">PRICE/KG</p>
+              <p className="text-slate-500 uppercase">
+                PRICE/{unitLabel(selected?.items?.[0]?.unit)}
+              </p>
               <p className="mt-1 font-semibold text-slate-900">
-                {selected?.items?.[0]?.unit_price}
+                ₦{Number(selected?.items?.[0]?.unit_price ?? 0).toFixed()}
               </p>
             </div>
             <div>
@@ -208,10 +212,16 @@ export default function Orders() {
                 {selected?.quantity}
               </p>
             </div>
+               <div>
+              <p className="text-slate-500">DELIVERY FEE</p>
+              <p className="mt-1 font-semibold text-slate-900">
+                ₦{Number(selected?.delivery_fee ?? 0).toFixed()}
+              </p>
+            </div>
             <div>
               <p className="text-slate-500">TOTAL</p>
               <p className="mt-1 font-semibold text-slate-900">
-                {selected?.total}
+                ₦{Number(selected?.total ?? 0).toFixed()}
               </p>
             </div>
           </div>
@@ -345,7 +355,7 @@ export default function Orders() {
                   </td>
                   <td className="py-3 pr-3">
                     <div>
-                      <p className="font-medium text-slate-600">
+                      <p className="font-medium text-slate-600 capitalize">
                         {order.buyer_name}
                       </p>
                       <p className="text-xs text-slate-400">
@@ -354,7 +364,7 @@ export default function Orders() {
                     </div>
                   </td>
                   <td className="py-3 pr-3 text-slate-600">
-                    {order.quantity} {order.items?.[0]?.unit}
+                    {formatQty(order.quantity ?? 0, order.items?.[0]?.unit)}
                   </td>
                   <td className="py-3 pr-3 text-slate-600">{order.total}</td>
                   <td className="py-3 pr-3">

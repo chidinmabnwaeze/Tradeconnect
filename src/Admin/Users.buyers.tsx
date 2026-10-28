@@ -6,6 +6,7 @@ import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
 import { getBuyers } from "../lib/services/buyers.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { toast } from "react-toastify";
 import { type Buyer } from "../lib/types/buyer";
 
 const PAGE_SIZE = 10;
@@ -41,7 +42,7 @@ export default function Buyers() {
         setTotal(response.meta.total);
         setPageCount(response.meta.last_page || 1);
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       } finally {
         setLoading(false);
       }

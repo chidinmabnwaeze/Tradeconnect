@@ -1,5 +1,6 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 
 import Register from "./components/register";
 import Login from "./components/login";
@@ -28,6 +29,7 @@ import EditListing from "./Admin/EditListing";
 function App() {
   return (
     <BrowserRouter>
+      <ToastContainer />
       <CartProvider>
         <Routes>
           <Route path="/" index element={<LandingPage />} />

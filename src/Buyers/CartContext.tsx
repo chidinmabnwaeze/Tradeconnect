@@ -1,17 +1,18 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import type { CreateOrderItemPayload } from "../lib/types/order";
 import type { Listing } from "../lib/types/listing";
+import { calculateDeliveryFee, type DeliveryPricing } from "../lib/delivery";
+import { DEFAULT_UNIT } from "../lib/units";
 
 // listing_id doubles as the identity POST /orders needs — price/name/etc are
 // display-only, the backend recomputes unit_price/discount/line_total itself.
-export interface CartItem extends CreateOrderItemPayload {
+export interface CartItem extends CreateOrderItemPayload, DeliveryPricing {
   produce_name: string;
   category_name: string;
   unit: string;
   price: number;
   image: string | null;
   stock: number;
-  delivery_fee_per_unit: number;
   minimum_order_quantity: number;
 }
 
@@ -54,11 +55,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           quantity: Math.min(minQty, listing.stock),
           produce_name: listing.produce.name,
           category_name: listing.produce.category.name,
-          unit: listing.unit ?? "unit",
+          unit: listing.unit ?? DEFAULT_UNIT,
           price: Number(listing.price),
           image: listing.primary_image_url ?? listing.produce.image_url,
           stock: listing.stock,
+          delivery_base_fee: listing.delivery_base_fee,
           delivery_fee_per_unit: listing.delivery_fee_per_unit ?? 0,
+          delivery_fee_cap: listing.delivery_fee_cap,
           minimum_order_quantity: minQty,
         },
       ];
@@ -96,7 +99,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [items],
   );
   const deliveryFee = useMemo(
-    () => items.reduce((sum, item) => sum + item.delivery_fee_per_unit * item.quantity, 0),
+    () =>
+      items.reduce(
+        (sum, item) => sum + calculateDeliveryFee(item, item.quantity),
+        0,
+      ),
     [items],
   );
   const total = subtotal + deliveryFee;

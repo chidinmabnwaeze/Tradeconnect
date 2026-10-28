@@ -35,6 +35,7 @@ import {
 import { updateOrderStatus } from "../lib/services/orders.service";
 import { getCurrentUser } from "../lib/services/auth.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { toast } from "react-toastify";
 import { formatDate, formatDays, formatNaira } from "../lib/format";
 import { useNavigate } from "react-router";
 import type { Activity } from "../lib/types/activity";
@@ -100,7 +101,7 @@ const Dashboard = () => {
         const response = await getDashboardRevenue({ period: revenuePeriod });
         if (!ignore) setRevenue(response);
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       } finally {
         if (!ignore) setRevenueLoading(false);
       }
@@ -156,7 +157,7 @@ const Dashboard = () => {
           : prev,
       );
     } catch (error) {
-      getErrorMessage(error);
+      toast.error(getErrorMessage(error));
     } finally {
       setProcessingOrderId(null);
     }
@@ -195,7 +196,7 @@ const Dashboard = () => {
         const response = await getDashboardStats();
         setDashboardData(response);
       } catch (error) {
-        getErrorMessage(error)
+        toast.error(getErrorMessage(error));
       }
     };
 
@@ -208,7 +209,7 @@ const Dashboard = () => {
         const response = await getCurrentUser();
         setUser(response);
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       }
     };
     getUser();
@@ -231,7 +232,7 @@ const Dashboard = () => {
         const response = await getRecentActivities({ limit: 10 });
         setRecentActivity(response);
       } catch (err) {
-        getErrorMessage(err);
+        toast.error(getErrorMessage(err));
       }
     };
     getRecentActivity();
@@ -247,7 +248,7 @@ const Dashboard = () => {
         setNotifications(response.data || []);
         console.log("Notifications fetched successfully:", response);
       } catch (err) {
-        getErrorMessage(err);
+        toast.error(getErrorMessage(err));
       }
     };
     getAllNotifications();

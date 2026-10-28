@@ -2,6 +2,7 @@ import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext";
 import { formatNaira } from "../lib/format";
+import { formatQty, unitLabel } from "../lib/units";
 
 export default function CartDrawer({
   open,
@@ -61,12 +62,11 @@ export default function CartDrawer({
                     <p className="truncate text-sm font-medium text-slate-900">{item.produce_name}</p>
                     <p className="text-xs text-slate-400">{item.category_name}</p>
                     <p className="mt-0.5 text-xs font-semibold text-primary">
-                      {formatNaira(item.price)}/{item.unit}
+                      {formatNaira(item.price)}/{unitLabel(item.unit)}
                     </p>
                     {item.minimum_order_quantity > 1 && (
                       <p className="mt-0.5 text-[11px] text-slate-400">
-                        Min {item.minimum_order_quantity}
-                        {item.unit}
+                        Min {formatQty(item.minimum_order_quantity, item.unit)}
                       </p>
                     )}
                   </div>

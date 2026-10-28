@@ -29,6 +29,9 @@ export interface Listing {
   unit?: string | null;
   stock: number;
   delivery_fee_per_unit?: number | null;
+  // Fee for the first unit; delivery_fee_per_unit then applies to each extra unit.
+  delivery_base_fee?: number | null;
+  delivery_fee_cap?: number | null;
   minimum_order_quantity?: number;
   description?: string | null;
   label?: ListingLabel | null;
@@ -54,6 +57,8 @@ export interface ListingPayload {
   unit?: string | null;
   stock: number;
   delivery_fee_per_unit?: number | null;
+  delivery_base_fee?: number | null;
+  delivery_fee_cap?: number | null;
   minimum_order_quantity?: number;
   description?: string | null;
   label?: ListingLabel | null;

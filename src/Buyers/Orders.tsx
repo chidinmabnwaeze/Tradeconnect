@@ -11,8 +11,10 @@ import {
 import BuyerLayout from "../components/BuyerLayout";
 import StatusBadge from "../components/StatusBadge";
 import { formatNaira } from "../lib/format";
+import { formatQty } from "../lib/units";
 import { getMyOrders } from "../lib/services/orders.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { toast } from "react-toastify";
 import { type Order } from "../lib/types/order";
 import { useNavigate } from "react-router-dom";
 
@@ -43,7 +45,7 @@ export default function Orders() {
         setOrders(response.data);
         setSelected((current) => current ?? response.data[0] ?? null);
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       } finally {
         setLoading(false);
       }
@@ -223,7 +225,7 @@ export default function Orders() {
                           </div>
                         </td>
                         <td className="py-3 text-slate-600">
-                          {item.quantity} {item.unit}
+                          {formatQty(item.quantity, item.unit)}
                         </td>
                         <td className="py-3 font-medium text-slate-900">
                           {formatNaira(Number(item.line_total))}

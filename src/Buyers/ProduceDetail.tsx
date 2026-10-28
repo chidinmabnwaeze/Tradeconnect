@@ -8,11 +8,17 @@ import {
   Minus,
   Plus,
 } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import BuyerLayout from "../components/BuyerLayout";
 import { useCart } from "./CartContext";
 import { formatNaira } from "../lib/format";
+import {
+  calculateDeliveryFee,
+  describeDeliveryPricing,
+} from "../lib/delivery";
+import { formatQty, unitLabel } from "../lib/units";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { useErrorToast } from "../lib/useErrorToast";
 import {
   getActiveListing,
   getActiveListings,
@@ -67,6 +73,7 @@ export default function ProduceDetail() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  useErrorToast(error);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [similar, setSimilar] = useState<Listing[]>([]);
@@ -149,7 +156,7 @@ export default function ProduceDetail() {
   const minQty = Math.max(listing.minimum_order_quantity ?? 1, 1);
   const maxQty = Math.max(listing.stock, 0);
   const outOfStock = listing.stock <= 0;
-  const unit = listing.stock;
+  const unit = listing.unit;
   const price = Number(listing.price);
   const originalPrice = listing.original_price
     ? Number(listing.original_price)
@@ -157,7 +164,7 @@ export default function ProduceDetail() {
   const discountPercent = listing.discount_percent
     ? Math.round(Number(listing.discount_percent))
     : null;
-  const deliveryFeePerUnit = listing.delivery_fee_per_unit ?? 0;
+  const deliveryFee = calculateDeliveryFee(listing, quantity);
 
   const adjustQuantity = (delta: number) => {
     setQuantity((prev) => Math.min(Math.max(prev + delta, minQty), maxQty));
@@ -179,7 +186,7 @@ export default function ProduceDetail() {
     } else {
       const nextQty = Math.min(existingQty + quantity, listing.stock);
       if (nextQty === existingQty) {
-        toast.error(`Only ${listing.stock} ${unit} available`);
+        toast.error(`Only ${formatQty(listing.stock, unit)} available`);
         return;
       }
       updateQty(listing.id, nextQty);
@@ -192,7 +199,7 @@ export default function ProduceDetail() {
       cartItems.find((item) => item.listing_id === product.id)?.quantity ?? 0;
     if (product.stock <= 0 || inCartQty >= product.stock) {
       toast.error(
-        `${product.stock} ${product.unit ?? "unit"} of ${product.produce.name} available`,
+        `${formatQty(product.stock, product.unit)} of ${product.produce.name} available`,
       );
       return;
     }
@@ -202,7 +209,6 @@ export default function ProduceDetail() {
 
   return (
     <BuyerLayout breadcrumb="Marketplace / Listing View">
-      <ToastContainer />
       <button
         onClick={() => navigate("/marketplace")}
         className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
@@ -300,7 +306,7 @@ export default function ProduceDetail() {
               {originalPrice && originalPrice > price ? (
                 <div className="mt-1 flex items-center gap-2">
                   <p className="text-sm text-slate-400 line-through">
-                    {formatNaira(originalPrice)} per unit
+                    {formatNaira(originalPrice)} per {unitLabel(unit)}
                   </p>
                   {discountPercent !== null && discountPercent > 0 && (
                     <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
@@ -309,7 +315,9 @@ export default function ProduceDetail() {
                   )}
                 </div>
               ) : (
-                <p className="mt-1 text-sm text-slate-400">per unit</p>
+                <p className="mt-1 text-sm text-slate-400">
+                  per {unitLabel(unit)}
+                </p>
               )}
             </div>
 
@@ -337,11 +345,13 @@ export default function ProduceDetail() {
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
-                <span className="text-sm text-slate-500">units</span>
+                <span className="text-sm text-slate-500">
+                  {unitLabel(unit, quantity)}
+                </span>
               </div>
               {minQty > 1 && (
                 <p className="mt-1 text-xs text-slate-400">
-                  Minimum order: {minQty}/{unit}
+                  Minimum order: {formatQty(minQty, unit)}
                 </p>
               )}
             </div>
@@ -367,12 +377,14 @@ export default function ProduceDetail() {
               <div className="flex justify-between">
                 <dt className="text-slate-500">Stock</dt>
                 <dd className="font-medium text-slate-800">
-                  {unit} units available
+                  {formatQty(listing.stock, unit)} available
                 </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-slate-500">Minimum Order</dt>
-                <dd className="font-medium text-slate-800">{minQty} units</dd>
+                <dd className="font-medium text-slate-800">
+                  {formatQty(minQty, unit)}
+                </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-slate-500">Farmer</dt>
@@ -386,8 +398,13 @@ export default function ProduceDetail() {
           <CollapsibleSection title="Delivery & Availability">
             <p className="text-sm text-slate-500">
               Standard delivery available to {listing.farmer.state} and
-              neighbouring LGAs at {formatNaira(deliveryFeePerUnit)} per {unit}—
-              total delivery cost scales with the quantity ordered.
+              neighbouring LGAs: {describeDeliveryPricing(listing, unit)}.
+            </p>
+            <p className="mt-2 text-sm text-slate-500">
+              Delivery for {formatQty(quantity, unit)}:{" "}
+              <span className="font-semibold text-slate-900">
+                {formatNaira(deliveryFee)}
+              </span>
             </p>
           </CollapsibleSection>
         </div>
@@ -422,12 +439,12 @@ export default function ProduceDetail() {
                     {product.farmer.state} - {product.farmer.lga}
                   </p>
                   <p className="mt-1 text-xs text-slate-400">
-                    {product.stock} {product.unit} available
+                    {formatQty(product.stock, product.unit)} available
                   </p>
                   <div className="mt-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                     <p className="text-sm font-semibold text-primary">
                       {formatNaira(Number(product.price))}{" "}
-                      <span className="text-xs">per unit</span>
+                      <span className="text-xs">per {unitLabel(product.unit)}</span>
                     </p>
                     <button
                       onClick={(e) => {

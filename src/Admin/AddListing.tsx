@@ -9,13 +9,20 @@ import {
   getCategories,
 } from "../lib/services/categories.service";
 import { createProduce, getProduce } from "../lib/services/produce.service";
-import { getFarmers } from "../lib/services/farmers.service";
+import { getFarmer } from "../lib/services/farmers.service";
 import { createFarmerListing } from "../lib/services/listings.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
 import type { Category } from "../lib/types/category";
 import type { Farmer } from "../lib/types/farmer";
 import type { Produce } from "../lib/types/produce";
 import type { ListingStatus } from "../lib/types/listing";
+import {
+  DeliveryPricingFields,
+  UnitSelect,
+} from "../components/ListingFields";
+import { unitLabel } from "../lib/units";
+import { useFarmerSearch } from "../lib/useFarmerSearch";
+import { useErrorToast } from "../lib/useErrorToast";
 
 const produceLabels = ["Fresh", "Organic", "Seasonal"];
 
@@ -56,15 +63,18 @@ const AddListing = () => {
   const [harvestDate, setHarvestDate] = useState("");
   const [produceLabel, setProduceLabel] = useState("");
   const [minOrderQty, setMinOrderQty] = useState("");
+  const [deliveryBaseFee, setDeliveryBaseFee] = useState("");
   const [deliveryFee, setDeliveryFee] = useState("");
+  const [deliveryFeeCap, setDeliveryFeeCap] = useState("");
 
-  // Farmers: loaded from the API, filtered client-side by the search box
-  const [farmers, setFarmers] = useState<Farmer[]>([]);
-  const [farmersLoading, setFarmersLoading] = useState(true);
+  // Farmers: searched on the backend as the admin types
   const [farmerSearch, setFarmerSearch] = useState("");
-  const [selectedFarmerId, setSelectedFarmerId] = useState<number | null>(null);
+  const { farmers, loading: farmersLoading } = useFarmerSearch(farmerSearch);
+  const [selectedFarmer, setSelectedFarmer] = useState<Farmer | null>(null);
+  const selectedFarmerId = selectedFarmer?.id ?? null;
 
   // Listing fields sent to POST /admin/farmers/{farmer_id}/listings
+  const [unit, setUnit] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [status, setStatus] = useState<ListingStatus>("active");
@@ -95,18 +105,21 @@ const AddListing = () => {
     loadProduce();
   }, []);
 
+  // Arriving from a farmer profile's "Add Listing" button pre-selects that farmer.
   useEffect(() => {
-    const loadFarmers = async () => {
+    const farmerId = searchParams.get("farmer_id");
+    if (!farmerId) return;
+    const loadSelectedFarmer = async () => {
       try {
-        setFarmers((await getFarmers({ per_page: 100 })).data);
+        setSelectedFarmer(await getFarmer(Number(farmerId)));
       } catch (err) {
         setError(getErrorMessage(err));
-      } finally {
-        setFarmersLoading(false);
       }
     };
-    loadFarmers();
-  }, []);
+    loadSelectedFarmer();
+  }, [searchParams]);
+
+  useErrorToast(error);
 
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return;
@@ -128,11 +141,12 @@ const AddListing = () => {
     setImage(e.target.files?.[0] ?? null);
   };
 
-  const filteredFarmers = farmers.filter((farmer) =>
-    `${farmer.name} ${farmer.state} ${farmer.lga}`
-      .toLowerCase()
-      .includes(farmerSearch.toLowerCase()),
-  );
+  // Keep the selected farmer visible even when the current search doesn't
+  // return them.
+  const farmerOptions =
+    selectedFarmer && !farmers.some((farmer) => farmer.id === selectedFarmer.id)
+      ? [selectedFarmer, ...farmers]
+      : farmers;
 
   const handleSaveListing = async () => {
     setError("");
@@ -147,6 +161,9 @@ const AddListing = () => {
       return setError("Please enter a valid price");
     if (!stock || Number(stock) < 0)
       return setError("Please enter a valid stock quantity");
+    if (!unit.trim()) return setError("Please select a unit of measurement");
+    if (deliveryFee === "" || Number(deliveryFee) < 0)
+      return setError("Please enter a valid delivery fee per additional unit");
 
     setLoading(true);
     try {
@@ -163,6 +180,7 @@ const AddListing = () => {
       await createFarmerListing(selectedFarmerId, {
         produce_id: produceId,
         price: Number(price),
+        unit: unit.trim(),
         stock: Number(stock),
         status,
         // `status` alone doesn't control marketplace visibility — the API
@@ -171,13 +189,8 @@ const AddListing = () => {
         minimum_order_quantity: minOrderQty ? Number(minOrderQty) : undefined,
         available_from: harvestDate || undefined,
         delivery_fee_per_unit: deliveryFee ? Number(deliveryFee) : undefined,
-      });
-      console.log("Listing created successfully", {
-        produceId,
-        farmerId: selectedFarmerId,
-        price: Number(price),
-        stock: Number(stock),
-        deliveryFee: deliveryFee ? Number(deliveryFee) : undefined
+        delivery_base_fee: deliveryBaseFee ? Number(deliveryBaseFee) : null,
+        delivery_fee_cap: deliveryFeeCap ? Number(deliveryFeeCap) : null,
       });
       navigate("/listings");
     } catch (err) {
@@ -348,13 +361,13 @@ const AddListing = () => {
           {farmersLoading && (
             <p className="text-sm text-gray-400">Loading farmers...</p>
           )}
-          {!farmersLoading && filteredFarmers.length === 0 && (
+          {!farmersLoading && farmerOptions.length === 0 && (
             <p className="text-sm text-gray-400">No farmers found.</p>
           )}
-          {filteredFarmers.map((farmer) => (
+          {farmerOptions.map((farmer) => (
             <div
               key={farmer.id}
-              onClick={() => setSelectedFarmerId(farmer.id)}
+              onClick={() => setSelectedFarmer(farmer)}
               className={`p-3 flex items-center justify-between border rounded-lg cursor-pointer ${
                 selectedFarmerId === farmer.id
                   ? "border-[#4A7C2A] bg-[#4A7C2A]/10"
@@ -382,9 +395,12 @@ const AddListing = () => {
             How much is this produce being sold for and how much is available
           </p>
         </div>
+        <div className="flex flex-col gap-2 mb-4 w-2/5">
+          <UnitSelect unit={unit} onChange={setUnit} />
+        </div>
         <div className="flex justify-between gap-2 mb-4">
           <div className="flex flex-col gap-2 w-full">
-            <label className="font-medium">Price per unit</label>
+            <label className="font-medium">Price per {unitLabel(unit)}</label>
             <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
               <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
                 N
@@ -397,7 +413,7 @@ const AddListing = () => {
                 onChange={(e) => setPrice(e.target.value)}
               />
               <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
-                /kg
+                /{unitLabel(unit)}
               </span>
             </div>
           </div>
@@ -411,7 +427,7 @@ const AddListing = () => {
               onChange={(e) => setStock(e.target.value)}
             />
             <p className="text-gray-400 text-sm">
-              In the same unit selected above
+              Number of {unitLabel(unit, 2)} available
             </p>
           </div>
         </div>
@@ -427,64 +443,15 @@ const AddListing = () => {
         </div>
       </section>
 
-      <section className="bg-white p-6 rounded-lg mt-6">
-        <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 mb-4">
-          <h1 className="text-xl font-bold">Delivery Pricing</h1>
-          <p className="text-gray-400 font-medium">
-            The cumulative delivery cost of buyer order.
-          </p>
-        </div>
-        <div className="flex justify-between gap-2 mb-4">
-          <div className="flex flex-col gap-2 w-full">
-            <label className="font-medium">Price per unit</label>
-            <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
-              <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
-                N
-              </span>
-              <input
-                type="number"
-                placeholder="e.g. 5000"
-                className="w-full py-2 px-3 focus:outline-none rounded-sm"
-                value={deliveryFee}
-                onChange={(e) => setDeliveryFee(e.target.value)}
-              />
-              {/* <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
-                /kg
-              </span> */}
-            </div>
-          </div>
-          {/* <div className="flex flex-col gap-2 w-full">
-            <label className="font-medium">Buyer Stock</label>
-            <input
-              type="number"
-              placeholder="e.g. 10"
-              className="border border-[#4A7C2A]/30 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#4A7C2A]"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-            />
-            <p className="text-gray-400 text-sm">
-              In the same unit selected above
-            </p>
-          </div> */}
-        </div>
-        {/* <div className="flex flex-col gap-2 mb-4 w-2/5">
-          <label className="font-medium">Total Delivery Cost</label>
-          <div className="flex items-center border border-[#4A7C2A]/30 rounded-md focus-within:ring-2 focus-within:ring-[#4A7C2A]">
-            <span className="p-2.5 border-r border-gray-300 bg-global-bg text-sm text-gray-400">
-              N
-            </span>
-            <input
-              type="number"
-              placeholder="e.g. 5000"
-              className="w-full py-2 px-3 focus:outline-none rounded-sm"
-              value={total}   
-            />
-            <p className="text-gray-400 text-sm">
-              Total delivery cost derived from the price per unit and stock quantity.
-            </p>
-          </div>
-        </div> */}
-      </section>
+      <DeliveryPricingFields
+        unit={unit}
+        baseFee={deliveryBaseFee}
+        perUnitFee={deliveryFee}
+        cap={deliveryFeeCap}
+        onBaseFeeChange={setDeliveryBaseFee}
+        onPerUnitFeeChange={setDeliveryFee}
+        onCapChange={setDeliveryFeeCap}
+      />
 
       {!selectedProduceId && (
         <section className="bg-white p-6 rounded-lg mt-6">

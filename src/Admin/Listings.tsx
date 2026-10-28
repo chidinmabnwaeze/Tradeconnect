@@ -7,23 +7,47 @@ import { useNavigate } from "react-router";
 import { type Listing } from "../lib/types/listing";
 import { getAllListings } from "../lib/services/listings.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { useErrorToast } from "../lib/useErrorToast";
+import { formatQty, unitLabel } from "../lib/units";
 
 const PAGE_SIZE = 10;
 
 export default function Listings() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [error, setError] = useState<string | null>(null);
+  useErrorToast(error);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const pageCount = Math.ceil(listings.length / PAGE_SIZE) || 1;
+  const [pageCount, setPageCount] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const navigate = useNavigate();
 
+  // Debounce the search box so it doesn't fire a request per keystroke.
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  // Search and pagination run on the backend so every listing is reachable,
+  // not just the first page the API returns.
   useEffect(() => {
     const fetchlistings = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const response = await getAllListings({ per_page: 100 });
+        const response = await getAllListings({
+          page,
+          per_page: PAGE_SIZE,
+          search: debouncedSearch || undefined,
+        });
         setListings(response.data);
+        setTotal(response.meta.total);
+        setPageCount(response.meta.last_page || 1);
       } catch (err) {
         setError(getErrorMessage(err));
       } finally {
@@ -31,7 +55,7 @@ export default function Listings() {
       }
     };
     fetchlistings();
-  }, []);
+  }, [page, debouncedSearch]);
 
   return (
     <Layout breadcrumb="Listings / All products" compact>
@@ -53,7 +77,10 @@ export default function Listings() {
 
         <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <input
-            placeholder="Search listings..."
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by produce, farmer or location..."
             className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none sm:w-80"
           />
           <div className="flex flex-wrap items-center gap-3">
@@ -88,7 +115,7 @@ export default function Listings() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={5} className="py-26 m-auto">
+                  <td colSpan={6} className="py-26 m-auto">
                     <div className="flex justify-center items-center">
                       <div className="loader"></div>
                     </div>
@@ -96,72 +123,88 @@ export default function Listings() {
                 </tr>
               )}
 
-              {listings.map((listing, idx) => (
-                <tr
-                  key={idx}
-                  className="border-t border-slate-100 align-middle"
-                >
-                  <td className="px-3 py-4 pr-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-global-bg text-2xl">
-                        {listing.produce.image_url ? (
-                          <img
-                            src={listing.produce.image_url}
-                            alt={listing.produce.name}
-                            className="h-full w-full rounded-full object-cover"
-                          />
-                        ) : (
-                          <span>{listing.produce.name.charAt(0)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900">
-                          {listing.produce.name}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {listing.produce.category.name}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 pr-4">
-                    <p className="font-medium text-slate-900">
-                      {listing.farmer.name}
-                    </p>
-                  </td>
-                  <td className="px-3 py-4 pr-4 font-medium text-primary">
-                    {listing.price}
-                  </td>
-                  <td className="px-3 py-4 pr-4 text-slate-600">
-                    {listing.stock}
-                  </td>
-                  <td className="px-3 py-4 pr-4">
-                    <StatusBadge status={listing.status} />
-                  </td>
-                  <td className="px-3 py-4 text-right">
-                    <div className="flex items-center justify-end gap-4">
-                      <button
-                        onClick={() => navigate(`/listings/${listing.id}/edit`)}
-                        className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
-                      >
-                        <SquarePen className="h-3.5 w-3.5" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/add-listing?produce_id=${listing.produce.id}`,
-                          )
-                        }
-                        className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
-                      >
-                        <UserPlus className="h-3.5 w-3.5" />
-                        Add Farmer
-                      </button>
-                    </div>
+              {!loading && listings.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="py-10 text-center text-sm text-slate-500"
+                  >
+                    {debouncedSearch
+                      ? `No listings match "${debouncedSearch}".`
+                      : "No listings yet."}
                   </td>
                 </tr>
-              ))}
+              )}
+
+              {!loading &&
+                listings.map((listing) => (
+                  <tr
+                    key={listing.id}
+                    className="border-t border-slate-100 align-middle"
+                  >
+                    <td className="px-3 py-4 pr-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-global-bg text-2xl">
+                          {listing.produce.image_url ? (
+                            <img
+                              src={listing.produce.image_url}
+                              alt={listing.produce.name}
+                              className="h-full w-full rounded-full object-cover"
+                            />
+                          ) : (
+                            <span>{listing.produce.name.charAt(0)}</span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900">
+                            {listing.produce.name}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {listing.produce.category.name}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 pr-4">
+                      <p className="font-medium text-slate-900">
+                        {listing.farmer.name}
+                      </p>
+                    </td>
+                    <td className="px-3 py-4 pr-4 font-medium text-primary">
+                      {listing.price}/{unitLabel(listing.unit)}
+                    </td>
+                    <td className="px-3 py-4 pr-4 text-slate-600">
+                      {formatQty(listing.stock, listing.unit)}
+                    </td>
+                    <td className="px-3 py-4 pr-4">
+                      <StatusBadge status={listing.status} />
+                    </td>
+                    <td className="px-3 py-4 text-right">
+                      <div className="flex items-center justify-end gap-4">
+                        <button
+                          onClick={() =>
+                            navigate(`/listings/${listing.id}/edit`)
+                          }
+                          className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+                        >
+                          <SquarePen className="h-3.5 w-3.5" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() =>
+                            navigate(
+                              `/add-listing?produce_id=${listing.produce.id}`,
+                            )
+                          }
+                          className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+                        >
+                          <UserPlus className="h-3.5 w-3.5" />
+                          Add Farmer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -169,7 +212,7 @@ export default function Listings() {
         <Pagination
           page={page}
           pageCount={pageCount}
-          total={listings.length}
+          total={total}
           pageSize={PAGE_SIZE}
           onPageChange={setPage}
         />

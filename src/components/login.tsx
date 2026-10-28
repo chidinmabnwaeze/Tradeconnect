@@ -3,6 +3,7 @@ import { LockKeyholeIcon, Mail, Eye, EyeClosed } from "lucide-react";
 import { useAuthStore } from "../lib/context";
 import { type LoginData } from "../lib/types/auth";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { useErrorToast } from "../lib/useErrorToast";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import AuthTabs from "./AuthTabs";
@@ -16,6 +17,7 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
+  useErrorToast(error);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 

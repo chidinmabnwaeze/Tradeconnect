@@ -8,6 +8,7 @@ import {
   Package,
   ShieldCheck,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import Avatar from "../components/Avatar";
@@ -23,7 +24,9 @@ import {
   type FarmerVerificationStatus,
 } from "../lib/types/farmer";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { toast } from "react-toastify";
 import { formatDate, formatDays } from "../lib/format";
+import { formatQty, unitLabel } from "../lib/units";
 import type { Activity, ActivityType } from "../lib/types/activity";
 
 const tabs = ["Overview", "Listings", "Orders", "Activity Log"] as const;
@@ -51,7 +54,7 @@ export default function FarmerProfile() {
         setVerificationStatus(response.verification_status);
         setFarmerStatusState(response.status);
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       }
     };
     const handleFarmerActivities = async (farmerId: number) => {
@@ -59,7 +62,7 @@ export default function FarmerProfile() {
         const response = await getFarmerActivities(farmerId);
         setFarmerActivity(response);
       } catch (error) {
-        getErrorMessage(error);
+        toast.error(getErrorMessage(error));
       }
     };
     handleFarmerProfile(farmerId);
@@ -74,7 +77,7 @@ export default function FarmerProfile() {
       const response = await setFarmerVerification(id, status);
       setVerificationStatus(response.verification_status);
     } catch (error) {
-      getErrorMessage(error);
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -86,7 +89,7 @@ export default function FarmerProfile() {
       const response = await setFarmerStatus(id, status);
       setFarmerStatusState(response.status);
     } catch (error) {
-      getErrorMessage(error);
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -371,6 +374,31 @@ function OverviewTab({
 }
 
 function ListingsTab({ farmer }: { farmer: Farmer | null }) {
+  const navigate = useNavigate();
+
+  if (!farmer?.listings || farmer.listings.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-10 text-center">
+        <Package className="h-8 w-8 text-slate-300" />
+        <div>
+          <p className="font-medium text-slate-900">No listings yet</p>
+          <p className="mt-1 text-sm text-slate-500">
+            Add a listing to start selling this farmer's produce.
+          </p>
+        </div>
+        {farmer && (
+          <button
+            onClick={() => navigate(`/add-listing?farmer_id=${farmer.id}`)}
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95"
+          >
+            <Plus className="h-4 w-4" />
+            Add Listing
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-120 text-left text-sm">
@@ -401,8 +429,12 @@ function ListingsTab({ farmer }: { farmer: Farmer | null }) {
                   </div>
                 </div>
               </td>
-              <td className="py-3 font-medium text-primary">{item.price}</td>
-              <td className="py-3 text-slate-600">{item.stock}</td>
+              <td className="py-3 font-medium text-primary">
+                {item.price}/{unitLabel(item.unit)}
+              </td>
+              <td className="py-3 text-slate-600">
+                {formatQty(item.stock, item.unit)}
+              </td>
               <td className="py-3">
                 <StatusBadge status={item.status} />
               </td>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import BuyerLayout from "../components/BuyerLayout";
 import Avatar from "../components/Avatar";
 import {
@@ -158,7 +158,6 @@ export default function Settings() {
 
   return (
     <BuyerLayout breadcrumb="Settings / Buyer">
-      <ToastContainer />
       <div className="flex flex-col gap-6">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">

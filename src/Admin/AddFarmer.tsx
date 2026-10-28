@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import type { FarmerCreatePayload, FarmerStatus } from "../lib/types/farmer";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { useErrorToast } from "../lib/useErrorToast";
 import { createFarmer } from "../lib/services/farmers.service";
 import { lgasByState, nigerianStates } from "../lib/data/nigeria-lgas";
 import type { Produce } from "../lib/types/produce";
@@ -47,6 +48,7 @@ export default function AddFarmer() {
   const [selectedProduce, setSelectedProduce] = useState<Produce[]>([]);
 
   const [error, setError] = useState("");
+  useErrorToast(error);
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [createdFarmerId, setCreatedFarmerId] = useState<number | null>(null);

@@ -1,6 +1,7 @@
 import { ShieldCheck, X } from "lucide-react";
 import { useCart } from "./CartContext";
 import { formatNaira } from "../lib/format";
+import { formatQty } from "../lib/units";
 
 export default function OrderSummaryModal({
   open,
@@ -52,8 +53,7 @@ export default function OrderSummaryModal({
                 <p className="text-xs text-slate-400">{item.category_name}</p>
               </div>
               <p className="text-xs text-slate-500">
-                {item.quantity}
-                {item.unit}
+                {formatQty(item.quantity, item.unit)}
               </p>
               <p className="w-20 text-right text-sm font-semibold text-slate-900">
                 {formatNaira(item.quantity * item.price)}

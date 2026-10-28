@@ -12,6 +12,7 @@ import {
   updateDisputeStatus,
 } from "../lib/services/disputes.service";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { useErrorToast } from "../lib/useErrorToast";
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -26,6 +27,7 @@ export default function Disputes() {
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  useErrorToast(error);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   // Mobile-only: which pane is visible — list of disputes, or the open chat.

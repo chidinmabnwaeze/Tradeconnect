@@ -3,6 +3,7 @@ import { User, LockKeyholeIcon, Mail, Eye, EyeClosed } from "lucide-react";
 import { useAuthStore } from "../lib/context";
 import { type RegisterData } from "../lib/types/auth";
 import { getErrorMessage } from "../lib/getErrorMessage";
+import { useErrorToast } from "../lib/useErrorToast";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import AuthTabs from "./AuthTabs";
@@ -22,6 +23,7 @@ const Register = () => {
   const [lastName, setLastName] = useState("");
 
   const [error, setError] = useState("");
+  useErrorToast(error);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
