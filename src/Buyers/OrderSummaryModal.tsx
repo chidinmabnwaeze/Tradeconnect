@@ -2,19 +2,29 @@ import { ShieldCheck, X } from "lucide-react";
 import { useCart } from "./CartContext";
 import { formatNaira } from "../lib/format";
 import { formatQty } from "../lib/units";
+import type { DeliveryMethod } from "../lib/types/order";
 
 export default function OrderSummaryModal({
   open,
   onClose,
   onPay,
+  deliveryMethod,
 }: {
   open: boolean;
   onClose: () => void;
   onPay: () => void;
+  deliveryMethod: DeliveryMethod;
 }) {
-  const { items, subtotal, deliveryFee, total } = useCart();
+  const { items, subtotal, deliveryFee } = useCart();
 
   if (!open) return null;
+
+  // Only standard delivery is charged; pickup and express are free on the
+  // backend. Checkout never opens this with standard selected when
+  // deliveryFee is null.
+  const isStandard = deliveryMethod === "standard";
+  const delivery = isStandard ? (deliveryFee ?? 0) : 0;
+  const total = subtotal + delivery;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -70,11 +80,17 @@ export default function OrderSummaryModal({
           <div className="flex items-center justify-between text-slate-500">
             <p>
               Delivery fee{" "}
-              <span className="text-xs">
-                (Quantity influences total delivery fee)
-              </span>
+              {isStandard ? (
+                <span className="text-xs">
+                  (Quantity influences total delivery fee)
+                </span>
+              ) : (
+                <span className="text-xs">
+                  ({deliveryMethod === "pickup" ? "Pickup" : "Express"})
+                </span>
+              )}
             </p>
-            <p>{formatNaira(deliveryFee)}</p>
+            <p>{isStandard ? formatNaira(delivery) : "Free"}</p>
           </div>
           <div className="flex items-center justify-between pt-1 text-base font-bold text-slate-900">
             <p>Total</p>

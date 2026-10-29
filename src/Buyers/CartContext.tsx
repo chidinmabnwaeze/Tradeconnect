@@ -24,8 +24,10 @@ interface CartContextValue {
   clear: () => void;
   count: number;
   subtotal: number;
-  deliveryFee: number;
-  total: number;
+  // Standard delivery only; null when an item has no delivery fee configured
+  // (see undeliverableItems). Pickup and express are free.
+  deliveryFee: number | null;
+  undeliverableItems: CartItem[];
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -60,7 +62,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           image: listing.primary_image_url ?? listing.produce.image_url,
           stock: listing.stock,
           delivery_base_fee: listing.delivery_base_fee,
-          delivery_fee_per_unit: listing.delivery_fee_per_unit ?? 0,
+          delivery_fee_per_unit: listing.delivery_fee_per_unit,
           delivery_fee_cap: listing.delivery_fee_cap,
           minimum_order_quantity: minQty,
         },
@@ -98,15 +100,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     () => items.reduce((sum, item) => sum + item.quantity * item.price, 0),
     [items],
   );
-  const deliveryFee = useMemo(
+  const undeliverableItems = useMemo(
     () =>
-      items.reduce(
-        (sum, item) => sum + calculateDeliveryFee(item, item.quantity),
-        0,
-      ),
+      items.filter((item) => calculateDeliveryFee(item, item.quantity) === null),
     [items],
   );
-  const total = subtotal + deliveryFee;
+  const deliveryFee = useMemo(
+    () =>
+      undeliverableItems.length > 0
+        ? null
+        : items.reduce(
+            (sum, item) =>
+              sum + (calculateDeliveryFee(item, item.quantity) ?? 0),
+            0,
+          ),
+    [items, undeliverableItems],
+  );
 
   return (
     <CartContext.Provider
@@ -119,7 +128,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         count,
         subtotal,
         deliveryFee,
-        total,
+        undeliverableItems,
       }}
     >
       {children}

@@ -17,15 +17,17 @@ import Paystack from "@paystack/inline-js";
 import { toast } from "react-toastify";
 
 export default function Checkout() {
-  const { items, clear, deliveryFee } = useCart();
+  const { items, clear, deliveryFee, undeliverableItems } = useCart();
   const navigate = useNavigate();
   const [summaryOpen, setSummaryOpen] = useState(false);
-  const [deliveryMethod, setDeliveryMethod] =
-    useState<DeliveryMethod>("standard");
+  const standardAvailable = deliveryFee !== null;
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>(() =>
+    standardAvailable ? "standard" : "pickup",
+  );
   const [error, setError] = useState("");
+  // delivery_method is deliberately not kept here: it is sent straight from
+  // deliveryMethod so the buyer's selection is what the order uses.
   const [form, setForm] = useState({
-    // items: items,
-    delivery_method: deliveryMethod,
     delivery_name: "",
     delivery_phone: "",
     delivery_state: "",
@@ -58,7 +60,7 @@ export default function Checkout() {
           listing_id: item.listing_id,
           quantity: item.quantity,
         })),
-        delivery_method: form.delivery_method,
+        delivery_method: deliveryMethod,
         delivery_name: form.delivery_name,
         delivery_phone: form.delivery_phone,
         delivery_state: form.delivery_state,
@@ -237,7 +239,8 @@ export default function Checkout() {
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <button
               onClick={() => setDeliveryMethod("standard")}
-              className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
+              disabled={!standardAvailable}
+              className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-50 ${
                 deliveryMethod === "standard"
                   ? "border-primary bg-global-bg"
                   : "border-slate-200 hover:bg-slate-50"
@@ -252,7 +255,11 @@ export default function Checkout() {
                   Delivered in 2-4 business days, straight to your doorstep.
                 </p>
                 <p className="mt-1 text-xs font-semibold text-primary">
-                  {formatNaira(deliveryFee)}
+                  {deliveryFee !== null
+                    ? formatNaira(deliveryFee)
+                    : `Unavailable for ${undeliverableItems
+                        .map((item) => item.produce_name)
+                        .join(", ")}`}
                 </p>
               </div>
             </button>
@@ -275,6 +282,13 @@ export default function Checkout() {
                 <p className="mt-1 text-xs font-semibold text-primary">Free</p>
               </div>
             </button>
+            {/*
+              Express is hidden until express pricing is approved: the backend
+              currently charges NGN 0 for express, so "Extra charges apply"
+              would be wrong and "Free" would advertise free express. Restore
+              this button (and update its price text) once the backend has an
+              express pricing rule.
+
             <button
               onClick={() => setDeliveryMethod("express")}
               className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
@@ -296,6 +310,7 @@ export default function Checkout() {
                 </p>
               </div>
             </button>
+            */}
           </div>
         </div>
 
@@ -319,7 +334,15 @@ export default function Checkout() {
 
         <button
           disabled={items.length === 0}
-          onClick={() => setSummaryOpen(true)}
+          onClick={() => {
+            if (deliveryMethod === "standard" && !standardAvailable) {
+              showError(
+                "Standard delivery isn't available for some items in your cart. Choose pickup or remove those items.",
+              );
+              return;
+            }
+            setSummaryOpen(true);
+          }}
           className="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Proceed with Payment
@@ -330,6 +353,7 @@ export default function Checkout() {
         open={summaryOpen}
         onClose={() => setSummaryOpen(false)}
         onPay={handlePay}
+        deliveryMethod={deliveryMethod}
       />
     </BuyerLayout>
   );

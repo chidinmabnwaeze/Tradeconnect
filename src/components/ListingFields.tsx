@@ -142,9 +142,16 @@ export function DeliveryPricingFields({
           value={baseFee}
           onChange={onBaseFeeChange}
         />
+        {/* Without a first-unit fee this is charged for every unit. */}
         <NairaInput
-          label={`Fee per additional ${one}`}
-          hint={`Added for each ${one} after the first.`}
+          label={
+            baseFee === "" ? `Fee per ${one}` : `Fee per additional ${one}`
+          }
+          hint={
+            baseFee === ""
+              ? `Charged for every ${one} ordered.`
+              : `Added for each ${one} after the first.`
+          }
           suffix={`/${one}`}
           placeholder="e.g. 200"
           value={perUnitFee}
@@ -168,7 +175,7 @@ export function DeliveryPricingFields({
               <span key={qty}>
                 {formatQty(qty, unit)}:{" "}
                 <span className="font-semibold text-slate-900">
-                  {formatNaira(calculateDeliveryFee(pricing, qty))}
+                  {formatNaira(calculateDeliveryFee(pricing, qty) ?? 0)}
                 </span>
               </span>
             ))}

@@ -396,16 +396,25 @@ export default function ProduceDetail() {
           </CollapsibleSection>
 
           <CollapsibleSection title="Delivery & Availability">
-            <p className="text-sm text-slate-500">
-              Standard delivery available to {listing.farmer.state} and
-              neighbouring LGAs: {describeDeliveryPricing(listing, unit)}.
-            </p>
-            <p className="mt-2 text-sm text-slate-500">
-              Delivery for {formatQty(quantity, unit)}:{" "}
-              <span className="font-semibold text-slate-900">
-                {formatNaira(deliveryFee)}
-              </span>
-            </p>
+            {deliveryFee !== null ? (
+              <>
+                <p className="text-sm text-slate-500">
+                  Standard delivery available to {listing.farmer.state} and
+                  neighbouring LGAs: {describeDeliveryPricing(listing, unit)}.
+                </p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Standard delivery for {formatQty(quantity, unit)}:{" "}
+                  <span className="font-semibold text-slate-900">
+                    {formatNaira(deliveryFee)}
+                  </span>
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-slate-500">
+                Standard delivery isn't available for this listing yet. You
+                can still order it for pickup.
+              </p>
+            )}
           </CollapsibleSection>
         </div>
       </div>

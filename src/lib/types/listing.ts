@@ -28,10 +28,13 @@ export interface Listing {
   discount_amount?: string | null;
   unit?: string | null;
   stock: number;
-  delivery_fee_per_unit?: number | null;
-  // Fee for the first unit; delivery_fee_per_unit then applies to each extra unit.
-  delivery_base_fee?: number | null;
-  delivery_fee_cap?: number | null;
+  // Decimals arrive as strings, e.g. "200.00".
+  delivery_fee_per_unit?: string | null;
+  // Fee for the first unit; delivery_fee_per_unit then applies to each extra
+  // unit. null keeps the legacy qty × delivery_fee_per_unit rule.
+  delivery_base_fee?: string | null;
+  // Maximum delivery charge for one order line; null or 0 means no cap.
+  delivery_fee_cap?: string | null;
   minimum_order_quantity?: number;
   description?: string | null;
   label?: ListingLabel | null;

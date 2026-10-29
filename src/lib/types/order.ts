@@ -44,8 +44,11 @@ export interface OrderItem {
   unit_price: string;
   discount_amount: string;
   line_total: string;
-  delivery_fee_per_unit: number;
-  delivery_total: number;
+  // Order-time snapshots of the listing's delivery pricing (decimal strings).
+  delivery_base_fee: string | null;
+  delivery_fee_per_unit: string | null;
+  delivery_fee_cap: string | null;
+  delivery_total: string | null;
 }
 
 export interface OrderTimelineEvent {
